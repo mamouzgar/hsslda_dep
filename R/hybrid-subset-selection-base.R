@@ -1,39 +1,32 @@
-##' Authors: David Glass and Meelad Amouzgar
-##' date: June 24th, 2021
+##' Authors: Meelad Amouzgar and David Glass
+##' date: July 5th, 2021
 ##' Description: defines several functions required for hybrid subset selection:
 ##' 1) hsslda: the hybrid subset selection (HSS)
 ##' 2) downsampleBalance: downsampling function for faster HSS using the separation metric of choice with balanced downsampling of input class labels
 ##' 3) various separation metric functions:
 ##' 3a) Euclidean
 ##' 3b) Silhouette score
-##' 3c) Pixel density
-##' 3d) Pixel entropy
+##' 3c) Pixel entropy
+##' 3d) Pixel density
 ##'
 
 
-
-
-
-
-
-#' This function
-#' @param x: table with predictors of interest
-#' @param y: vector of class labels
-#' @param score.method: scoring metric to use to perform HSS
-#' @param custom.score.method: function for your custom scoring metric.
+#' @description: plotElbow: This function generates an Elbow plot of the scores for each # of features
+#' @param results: the final results table from computing all HSS combinations
+#' @param elbow: elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
 plotElbow <- function(results, elbow = NULL){
   dfElbow =split(results, results$no.markers)  %>% lapply(., function(x) { x[which.max(x$score),]})  %>% base::do.call(base::rbind, .)
 
   if (is.null(elbow)) {
-    p.Elbow = ggplot2::ggplot(dfElbow, aes(x=no.markers, y = score)) +
-      geom_line() +
-      geom_point()
+    p.Elbow = ggplot2::ggplot(dfElbow, ggplot2::aes(x=no.markers, y = score)) +
+      ggplot2::geom_line() +
+      ggplot2::geom_point()
 
     return(p.Elbow)
   }
-  p.Elbow = ggplot2::ggplot(dfElbow, aes(x=no.markers, y = score)) +
-    geom_line() +
-    geom_point(color = ifelse(dfElbow$no.markers == elbow, "red", "black"))
+  p.Elbow = ggplot2::ggplot(dfElbow, ggplot2::aes(x=no.markers, y = score)) +
+    ggplot2::geom_line() +
+    ggplot2::geom_point(color = ifelse(dfElbow$no.markers == elbow, "red", "black"))
 
   return(p.Elbow)
 }
@@ -51,23 +44,67 @@ plotElbow <- function(results, elbow = NULL){
 ##############################
 ## PIXEL ANALYSIS FUNCTIONS ##
 ##############################
+# create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
+#   pixel.grid = base::expand.grid(1:xbreaks,1:ybreaks) %>% data.frame(.)
+#   base::colnames(pixel.grid) = c("x","y")
+#   pixel.grid$pixel = base::paste(pixel.grid$x,pixel.grid$y, sep =".")
+#   return(pixel.grid)
+# }
+#
+# generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, ybreaks = 100) {
+#   ## returns a density map only of pixels that have cells in them
+#   xbin <- base::cut(data$x, xbreaks, include.lowest = TRUE)
+#   ybin <- base::cut(data$y, ybreaks, include.lowest = TRUE)
+#
+#   data_pixel_counts = cbind(data, xout = as.numeric(xbin), yout = as.numeric(ybin) )
+#   data_pixel_counts["pixel"] = paste(data_pixel_counts$xout, data_pixel_counts$yout, sep=".")
+#   data_pixel_counts = table(pixel = data_pixel_counts$pixel, labels = data_pixel_counts$labels) %>% as.data.frame() %>% .[.$Freq !=0, ] # %>% base::merge(.,pixel.grid, by = "pixel", all.y = TRUE)
+#   data_pixel_counts["count.0"] = ifelse(is.na(data_pixel_counts$Freq), 0,data_pixel_counts$Freq )
+#   data_pixel_counts = data_pixel_counts %>% split(., .$labels) %>% lapply(., function(dp){dp["percent.0"] = dp$count.0/sum(dp$count.0) ;return(dp) }) %>% do.call("rbind", .)
+#   return(data_pixel_counts)
+# }
+
+
+#' @description: create_pixel_grid: This function generates a pixel grid template, defaults to 10,000 pixels
+#' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
+#' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
 create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
-  pixel.grid = base::expand.grid(1:xbreaks,1:ybreaks) %>% data.frame(.)
-  base::colnames(pixel.grid) = c("x","y")
-  pixel.grid$pixel = base::paste(pixel.grid$x,pixel.grid$y, sep =".")
+  xbreaks <-xbreaks
+  ybreaks <-ybreaks
+  pixel.grid = expand.grid(1:xbreaks,1:ybreaks) %>% data.frame(.) %>%
+    rename(x=Var1, y = Var2) %>%
+    mutate(pixel = paste(x, y,sep= "."))
   return(pixel.grid)
 }
 
+#' @description: generate_density_map: This function computes the proportion (density) of the class labels in each pixel of the pixel grid generated using create_pixel_grid.
+#' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+#' @param pixel.grid: the output from the create_pixel_grid function.
+#' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
+#' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
 generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, ybreaks = 100) {
-  ## returns a density map only of pixels that have cells in them
-  xbin <- base::cut(data$x, xbreaks, include.lowest = TRUE)
-  ybin <- base::cut(data$y, ybreaks, include.lowest = TRUE)
 
-  data_pixel_counts = cbind(data, xout = as.numeric(xbin), yout = as.numeric(ybin) )
-  data_pixel_counts["pixel"] = paste(data_pixel_counts$xout, data_pixel_counts$yout, sep=".")
-  data_pixel_counts = table(pixel = data_pixel_counts$pixel, labels = data_pixel_counts$labels) %>% as.data.frame() %>% .[.$Freq !=0, ] # %>% base::merge(.,pixel.grid, by = "pixel", all.y = TRUE)
-  data_pixel_counts["count.0"] = ifelse(is.na(data_pixel_counts$Freq), 0,data_pixel_counts$Freq )
-  data_pixel_counts = data_pixel_counts %>% split(., .$labels) %>% lapply(., function(dp){dp["percent.0"] = dp$count.0/sum(dp$count.0) ;return(dp) }) %>% do.call("rbind", .)
+  # data_pixel_counts <- lapply(unique(data$labels), function(class.label) {
+  #   print(class.label)
+
+
+
+  xbin <- cut(data$x, xbreaks, include.lowest = TRUE)
+  ybin <- cut(data$y, ybreaks, include.lowest = TRUE)
+
+  data_pixel_counts <- data %>%
+    ungroup() %>%
+    mutate(xout = as.numeric(xbin),
+           yout = as.numeric(ybin),
+           pixel = paste(xout,yout,sep=".")) %>%
+    group_by(pixel,labels) %>%
+    summarize(count = n())  %>%
+    ungroup() %>%
+    right_join(.,pixel.grid,by="pixel") %>%
+    mutate(count.0 = ifelse(is.na(count), 0, count)) %>%
+    ungroup() %>%
+    group_by(labels) %>%
+    mutate(percent.0 = count.0 / sum(count.0))
   return(data_pixel_counts)
 }
 
@@ -75,14 +112,33 @@ generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, y
 ###############################
 ## PIXEL CLASS ENTROPY SCORE ##
 ###############################
-calculate_pceScore <- function(data) {
-  pce.score = split(data, data$pixel) %>% lapply(., function(dp) {data.frame(entropy = TFBSTools::shannon.entropy(dp$count), num.of.labels = length(dp$labels)) } ) %>% do.call("rbind",.)
-  pce.score["pce.score"] = 1-(pce.score$entropy/log2(pce.score$num.of.labels))
-  pce.score["pce.score"] = ifelse(is.na(pce.score$pce.score), 1 , pce.score$pce.score)
-  pce.score["pixel"] = rownames(pce.score)
+# calculate_pceScore <- function(data) {
+#   pce.score = split(data, data$pixel) %>% lapply(., function(dp) {data.frame(entropy = TFBSTools::shannon.entropy(dp$count), num.of.labels = length(dp$labels)) } ) %>% do.call("rbind",.)
+#   pce.score["pce.score"] = 1-(pce.score$entropy/log2(pce.score$num.of.labels))
+#   pce.score["pce.score"] = ifelse(is.na(pce.score$pce.score), 1 , pce.score$pce.score)
+#   pce.score["pixel"] = rownames(pce.score)
+#   return(pce.score)
+# }
+#' @description: calculate_pceScore: This function computes the pixel class entropy score.
+#' @param density_metric_output: the output from the function, density_metric_output
+calculate_pceScore <- function(data = density_metric_output) {
+  data <- na.omit(data) %>% ungroup()
+  pce.score <- data %>%
+    group_by(x,y,pixel) %>%
+    summarize(entropy = TFBSTools::shannon.entropy(count),
+              num.of.labels = n()) %>%
+    ungroup() %>%
+    mutate(pce.score = 1-(entropy/log2(num.of.labels)),
+           pce.score = case_when(is.na(pce.score) ~ 1,
+                                 TRUE ~ pce.score)) %>%
+    dplyr::select(pixel,x,y, num.of.labels,entropy, pce.score)
+
   return(pce.score)
 }
 
+
+#' @description: computePCEscore: computes the pixel class entropy score for any biaxial dataset with class labels
+#' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
 computePCEscore <- function(data) {
   ## data in format of x(axis1), y(axis2), class label of interest
 
@@ -96,39 +152,46 @@ computePCEscore <- function(data) {
   return(pce.score)
 }
 
-
-
-# calculate_pixelDensityScore <- function(data = density_metric_output) {
-#
-#   data <- na.omit(data) %>% ungroup()
-#   # print("calculate-pixel-clonality")
-#
-#   pixelDensity.score <- data %>%
-#     ungroup() %>%
-#     mutate(binary.labels = ifelse(labels == class.label, "class.of.interest", "other")) %>%
-#     dplyr::select(pixel, x, y, percent.0, binary.labels) %>%
-#     group_by(pixel, x, y, binary.labels) %>%
-#     summarize(count = sum(count.0),
-#               percent = sum(percent.0)) %>%
-#     gather(key = "approach", value = "quantity", -pixel,-x,-y,-binary.labels) %>%
-#     spread(key = "binary.labels", value = "quantity") %>%
-#     rowwise() %>%
-#     mutate(class.of.interest = ifelse(is.na(class.of.interest), 0, class.of.interest),
-#            other = ifelse(is.na(other), 0, other),
-#            density.metric = (class.of.interest / (other+class.of.interest)),
-#            # density.metric = ifelse()
-#            labels = class.label)  %>%
-#     # dplyr::select(pixel,x,y, approach, class.of.interest, other,density.metric, labels) %>%
-#     group_by(approach, labels) %>%
-#     summarize(density.summary = sum(density.metric)) %>%
-#     mutate(density.summary.normalized = density.summary / 10000)
-#   return(pixelDensity.score)
-# }
+##########################
+## PIXEL DENSITY SCORE  ##
+##########################
+#' #' @description: calculate_pixelDensityScore: computes the pixel density score for any biaxial dataset with class labels. Must finish recoding. FYI see lapply commented out for reminder on what needs to change
+#' #' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+#' calculate_pixelDensityScore <- function(data = density_metric_output) {
+#'
+#'   data <- na.omit(data) %>% ungroup()
+#'   # print("calculate-pixel-clonality")
+#'
+#'   pixelDensity.score <- data %>%
+#'     dplyr::ungroup() %>%
+#'     dplyr::mutate(binary.labels = ifelse(labels == class.label, "class.of.interest", "other")) %>%
+#'     dplyr::select(pixel, x, y, percent.0, binary.labels) %>%
+#'     dplyr::group_by(pixel, x, y, binary.labels) %>%
+#'     dplyr::summarize(count = sum(count.0),
+#'               percent = sum(percent.0)) %>%
+#'     tidyr::gather(key = "approach", value = "quantity", -pixel,-x,-y,-binary.labels) %>%
+#'     dplyr::spread(key = "binary.labels", value = "quantity") %>%
+#'     dplyr::rowwise() %>%
+#'     dplyr::mutate(class.of.interest = ifelse(is.na(class.of.interest), 0, class.of.interest),
+#'            other = ifelse(is.na(other), 0, other),
+#'            density.metric = (class.of.interest / (other+class.of.interest)),
+#'            # density.metric = ifelse()
+#'            labels = class.label)  %>%
+#'     # dplyr::select(pixel,x,y, approach, class.of.interest, other,density.metric, labels) %>%
+#'     dplyr:: group_by(approach, labels) %>%
+#'     dplyr::summarize(density.summary = sum(density.metric)) %>%
+#'     dplyr::mutate(density.summary.normalized = density.summary / 10000)
+#'   return(pixelDensity.score)
+#' }
 
 
 ########################
 ## EUCLIDEAN DISTANCE ##
 ########################
+#' @description: getScore_euclidean: An aggregate function to compute LDA and euclidean distance score for HSS.
+#' @param x: dataframe of training data
+#' @param y: vector of class labels matching training data rows
+#' @param cols: vector of column names
 getScore_euclidean <- function(x, y, cols) {
   # performs LDA using columns provided and returns lowest euclidean distance between pop means
   lda.out <- MASS::lda(y~., data=x[, cols])
@@ -139,6 +202,10 @@ getScore_euclidean <- function(x, y, cols) {
 #######################
 ## SILHOUETTE SCORE  ##
 #######################
+#' @description: getScore_silhouette: An aggregate function to compute LDA and silouette score for HSS.
+#' @param x: dataframe of training data
+#' @param y: vector of class labels matching training data rows
+#' @param cols: vector of column names
 getScore_silhouette  <- function(x, y, cols) {
   df = x[, cols]
   lda.out <- MASS::lda(y~., data=df)
@@ -156,6 +223,10 @@ getScore_silhouette  <- function(x, y, cols) {
 ##########################################
 ## PIXEL CLONALITY ENTROPY (PCE) SCORE  ##
 ##########################################
+#' @description: getScore_pce: An aggregate function to compute LDA and the PCE score for HSS.
+#' @param x: dataframe of training data
+#' @param y: vector of class labels matching training data rows
+#' @param cols: vector of column names
 getScore_pce <- function(x, y, cols) {
   ## pixel clonality scoring method
   lda.out <- MASS::lda(y~., data=x[, cols])
@@ -174,11 +245,50 @@ getScore_pce <- function(x, y, cols) {
 }
 
 
+getScore_pixelDensity <- function(x, y, cols) {
+  ## pixel clonality scoring method
+  # performs LDA using columns provided and returns lowest euclidean distance between pop means
+  lda.out <- MASS::lda(y~., data=x[, cols])
+
+  if (!exists("pixel.grid")){
+    pixel.grid <- create_pixel_grid()
+  }
+  data.pixels <- as.matrix(x[, cols]) %*% lda.out$scaling
+  data.pixels <- data.pixels[ , c("LD1","LD2" )]%>% data.frame()
+  data.pixels["labels"] <- y
+  colnames(data.pixels) <- c("x","y","labels")
+
+  density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
+  pixelDensity_output <- calculate_pixelDensityScore(data = density_metric_output)
+  pixelDensity.score <-  mean(pixelDensity_output$density.summary.normalized)
+  # print(pixelDensity.score)
+  return(pixelDensity.score)
+}
+
+###############################
+## CUSTOM TEMPLATE FUNCTION  ##
+###############################
+#' @description: getScore_custom: placeholder for a custom metric
+#' @param x: dataframe of training data
+#' @param y: vector of class labels matching training data rows
+#' @param cols: vector of column names
+#' @param custom.score.method: a custom-function that takes in x, y, and cols, and outputs a score where the larger the value, the more optimal your separation criteria is.
+getScore_custom <- function(x, y, cols, custom.score.method, ...) {
+  df = x[, cols, with=F]
+  lda.out <- lda(y~., data=df)
+  custom_output = custom.score.method(x, y, cols, lda.out, ...)
+  return(custom_output)
+}
+
 #####################################
 ## aggregate function for getScore ##
 #####################################
-
-getScore <- function(x , y, cols = colnames(x), score.method) {
+#' @description: getScore: wrapper function for each getScore metric
+#' @param x: dataframe of training data
+#' @param y: vector of class labels matching training data rows
+#' @param cols: vector of column names
+#' @param score.method: the scoring method to use.
+getScore <- function(x , y, cols, score.method) {
   if (length(cols) > 1) {
     if (score.method == "euclidean") {
       # print("euclidean")
@@ -197,7 +307,7 @@ getScore <- function(x , y, cols = colnames(x), score.method) {
     } else if (score.method == "pixel.density") {
       # print("pixel.density")
       ## pixel clonality scoring method
-      scoreFunction <- getScore_pce(x, y, cols)
+      scoreFunction <- getScore_pixelDensity(x, y, cols)
       return(scoreFunction)
     } else if (score.method == "custom") {
 
@@ -211,7 +321,12 @@ getScore <- function(x , y, cols = colnames(x), score.method) {
   }
 }
 
-hybridSubsetSelection <- function(x, y, two.d=TRUE, score.method , custom.score.method = NULL) {
+#' @description: hybridSubsetSelection: function that performs hybrid stepwise subset selection
+#' @param x: dataframe of training data
+#' @param y: vector of class labels matching training data rows
+#' @param score.method: the scoring method to use.
+#' @param custom.score.method: optional input, a custome scoring function (see getScore_custom)
+hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NULL) {
   options(dplyr.summarise.inform = FALSE)
 
     # performs hybrid stepwise subset selection on LDA reduced dimensions
@@ -232,102 +347,8 @@ hybridSubsetSelection <- function(x, y, two.d=TRUE, score.method , custom.score.
     results[1,] <- as.list(rep(F, n.channels))
     subtract.log <- results[0,] # record of keep values inputted into subtractOne
     results$score <- 0
-    # results <- data.table(results)
 
-    hss.results = list()
-
-    ##
-    ###############
-    ###############
-    ###############
-    ## FUNCTIONS ##
-    ###############
-    ###############
-    ###############
-
-    # ##############################
-    # ## pixel analysis functions ##
-    # ##############################
-    # create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
-    #   xbreaks <-xbreaks
-    #   ybreaks <-ybreaks
-    #   pixel.grid = expand.grid(1:xbreaks,1:ybreaks) %>% data.frame(.) %>%
-    #     rename(x=Var1, y = Var2) %>%
-    #     mutate(pixel = paste(x, y,sep= "."))
-    #   return(pixel.grid)
-    # }
-    #
-    # generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, ybreaks = 100) {
-    #
-    #   # data_pixel_counts <- lapply(unique(data$labels), function(class.label) {
-    #   #   print(class.label)
-    #
-    #
-    #
-    #   xbin <- cut(data$x, xbreaks, include.lowest = TRUE)
-    #   ybin <- cut(data$y, ybreaks, include.lowest = TRUE)
-    #
-    #   data_pixel_counts <- data %>%
-    #     ungroup() %>%
-    #     mutate(xout = as.numeric(xbin),
-    #            yout = as.numeric(ybin),
-    #            pixel = paste(xout,yout,sep=".")) %>%
-    #     group_by(pixel,labels) %>%
-    #     summarize(count = n())  %>%
-    #     ungroup() %>%
-    #     right_join(.,pixel.grid,by="pixel") %>%
-    #     mutate(count.0 = ifelse(is.na(count), 0, count)) %>%
-    #     ungroup() %>%
-    #     group_by(labels) %>%
-    #     mutate(percent.0 = count.0 / sum(count.0))
-    #   return(data_pixel_counts)
-    # }
-    #
-    #
-    # calculate_pceScore <- function(data = density_metric_output) {
-    #
-    #   data <- na.omit(data) %>% ungroup()
-    #   # print("calculate-pixel-clonality")
-    #
-    #   pce.score <- data %>%
-    #     group_by(x,y,pixel) %>%
-    #     summarize(entropy = TFBSTools::shannon.entropy(count),
-    #               num.of.labels = n()) %>%
-    #     ungroup() %>%
-    #     mutate(pce.score = 1-(entropy/log2(num.of.labels)),
-    #            pce.score = case_when(is.na(pce.score) ~ 1,
-    #                                  TRUE ~ pce.score)) %>%
-    #     dplyr::select(pixel,x,y, num.of.labels,entropy, pce.score)
-    #
-    #   return(pce.score)
-    # }
-    #
-    # calculate_pixelDensityScore <- function(data = density_metric_output) {
-    #
-    #   data <- na.omit(data) %>% ungroup()
-    #   # print("calculate-pixel-clonality")
-    #
-    #   pixelDensity.score <- data %>%
-    #     ungroup() %>%
-    #     mutate(binary.labels = ifelse(labels == class.label, "class.of.interest", "other")) %>%
-    #     dplyr::select(pixel, x, y, percent.0, binary.labels) %>%
-    #     group_by(pixel, x, y, binary.labels) %>%
-    #     summarize(count = sum(count.0),
-    #               percent = sum(percent.0)) %>%
-    #     gather(key = "approach", value = "quantity", -pixel,-x,-y,-binary.labels) %>%
-    #     spread(key = "binary.labels", value = "quantity") %>%
-    #     rowwise() %>%
-    #     mutate(class.of.interest = ifelse(is.na(class.of.interest), 0, class.of.interest),
-    #            other = ifelse(is.na(other), 0, other),
-    #            density.metric = (class.of.interest / (other+class.of.interest)),
-    #            # density.metric = ifelse()
-    #            labels = class.label)  %>%
-    #     # dplyr::select(pixel,x,y, approach, class.of.interest, other,density.metric, labels) %>%
-    #     group_by(approach, labels) %>%
-    #     summarize(density.summary = sum(density.metric)) %>%
-    #     mutate(density.summary.normalized = density.summary / 10000)
-    #   return(pixelDensity.score)
-    # }
+    hss.results = list() ## final output
 
     #############################
     #############################
@@ -379,33 +400,10 @@ hybridSubsetSelection <- function(x, y, two.d=TRUE, score.method , custom.score.
     #   return(pce.score)
     # }
 
-    getScore_pixelDensity <- function(x, y, cols) {
-      ## pixel clonality scoring method
-      # performs LDA using columns provided and returns lowest euclidean distance between pop means
-      lda.out <- lda(y~., data=x[, cols, with=F])
-      data.pixels <- makeAxes(dt = x[, cols, with=F], co=lda.out$scaling)
-      data.pixels <- data.pixels[ , c("ld1","ld2" )]
-      data.pixels$labels <- y
-      colnames(data.pixels) <- c("x","y","labels")
-
-      if (!exists("pixel.grid")){
-        pixel.grid <<- create_pixel_grid()
-      }
-
-      density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
-      pixelDensity_output <- calculate_pixelDensityScore(data = density_metric_output)
-      pixelDensity.score <-  mean(pixelDensity_output$density.summary.normalized)
-      print(pixelDensity.score)
-      return(pixelDensity.score)
-    }
 
 
-    getScore_custom <- function(x, y, cols, custom.score.method) {
-      df = x[, cols, with=F]
-      lda.out <- lda(y~., data=df)
-      custom_output = custom.score.method(cols, x, y, lda.out, ...)
-      return(custom_output)
-    }
+
+
 
 
     ####################
@@ -601,13 +599,13 @@ makeAxes <- function(df=dat, co=coefficients, axis.name="ld") {
 #' @param y: vector of class labels
 #' @param score.method: scoring metric to use to perform HSS
 #' @param custom.score.method: function for your custom scoring metric.
-runHSS <- function(x, y, two.d = TRUE, score.method, custom.score.method = NULL){
+runHSS <- function(x, y, score.method, custom.score.method = NULL){
   if (!score.method %in% c("euclidean","silhouette", "pixel.density","pixel.entropy")){
     stop("score.method method must be: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.")
   }
 
   print(score.method)
-  hss.results <- hybridSubsetSelection(x, y, two.d= TRUE, score.method = score.method, custom.score.method = custom.score.method)
+  hss.results <- hybridSubsetSelection(x, y, score.method = score.method, custom.score.method = custom.score.method)
   hss.results <<-hss.results
   coefficients = hss.results[["HSS-LDA-model"]]$scaling
   dat <- makeAxes(df=x, co=coefficients)
@@ -616,7 +614,10 @@ runHSS <- function(x, y, two.d = TRUE, score.method, custom.score.method = NULL)
 }
 
 
-
+# setwd("~/phd-projects")
+# library(dplyr)
+# library(magrittr)
+# library(ggplot2)
 # path  <- "sc-lda/data/analysis-ready/metabolism-CD8-naive-data_cell-allmarkers.csv"
 # channels <- c('GLUT1', 'HK2', 'GAPDH', 'LDHA', 'MCT1', 'PFKFB4', 'IDH2', 'CyclinB1',
 #               'GLUD12', 'CS', 'OGDH', 'CytC', 'ATP5A', 'S6_p', 'HIF1A', 'PDK1_p', 'NRF1',
@@ -625,7 +626,7 @@ runHSS <- function(x, y, two.d = TRUE, score.method, custom.score.method = NULL)
 #               "CD45RA",
 #               # "CD69","CD25"
 #               "CD69","CD3","CD98","CD25","CD27","CD137","CD57"
-
+#
 #               # 'DNA','barium'
 # )
 # dat_input <- data.table::fread(path)
@@ -635,28 +636,53 @@ runHSS <- function(x, y, two.d = TRUE, score.method, custom.score.method = NULL)
 #   group_by(labels) %>%
 #   sample_n(1000) %>%
 #   data.frame()
-
-
-
-
 # # fwrite(dat, file = output_path)
 # # training data with appropriate channels
 # train.x <- dat[, channels[1:12]]
 # # training class labels - must be 3+ unique classes
 # train.y <- dat$labels
-
-# # x=train.x
-# # y=train.y
-
+# #
+# # # x=train.x
+# # # y=train.y
+# #
 # start.time = Sys.time()
-# hss.results=runHSS(x = train.x, y = train.y, score.method = "pixel.entropy")
+# # hss.results=runHSS(x = train.x, y = train.y, score.method = "euclidean")
+# # hss.results=runHSS(x = train.x, y = train.y, score.method = "silhouette")
+# end.time = Sys.time()
+# # coefficients <- hybridSubsetSelection(x=train.x, y=train.y, score.method = "pixel.entropy")
+# #
+# end.time-start.time
+#
+# start.time.1 = Sys.time()
 # hss.results=runHSS(x = train.x, y = train.y, score.method = "euclidean")
+# end.time.1 = Sys.time()
+# end.time.1-start.time.1
+#
+# start.time.2 = Sys.time()
+# hss.results=runHSS(x = train.x, y = train.y, score.method = "silhouette")
+# end.time.2 = Sys.time()
+# end.time.2-start.time.2
+#
+# start.time.3 = Sys.time()
+# hss.results=runHSS(x = train.x, y = train.y, score.method = "pixel.entropy")
+# end.time.3 = Sys.time()
+# end.time.3-start.time.3
+# end.time.1-start.time.1
+# end.time.2-start.time.2
+# end.time.3-start.time.3
+# start.time.4 = Sys.time()
+# hss.results=runHSS(x = train.x, y = train.y, score.method = "pixel.density")
+# end.time.4 = Sys.time()
 # hss.results=runHSS(x = train.x, y = train.y, score.method = "silhouette")
 
-# # coefficients <- hybridSubsetSelection(x=train.x, y=train.y, score.method = "pixel.entropy")
-# end.time = Sys.time()
 
-# end.time-start.time
+
+
+
+
+
+
+
 # dat <- makeAxes()
 # # cluster::silhouette(x = y)
 # # dist.matr = dist(train.x) %>% as.matrix()
