@@ -14,9 +14,6 @@
 ##'
 ##'
 ##'
-
-
-
 #' @importFrom ggplot2 ggplot
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 geom_line
@@ -389,258 +386,258 @@ getScore <- function(x , y, cols, score.method) {
 hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NULL) {
   options(dplyr.summarise.inform = FALSE)
 
-    # performs hybrid stepwise subset selection on LDA reduced dimensions
-    # Inputs:
-    #   x - data.table to evaluate, rows are cells, columns are columns to evaluate
-    #   y - vector of observation classes
-    #   two.d - logical if true creates two new axes, if false only one
-    # Outputs:
-    #   matrix of coefficients where rows are markers and columns are axes
+  # performs hybrid stepwise subset selection on LDA reduced dimensions
+  # Inputs:
+  #   x - data.table to evaluate, rows are cells, columns are columns to evaluate
+  #   y - vector of observation classes
+  #   two.d - logical if true creates two new axes, if false only one
+  # Outputs:
+  #   matrix of coefficients where rows are markers and columns are axes
 
-    ### global data structures ###
-    keep <- NULL
-    channels <- colnames(x)
-    n.channels <- length(channels)
-    current.score <- 0
-    continue <- TRUE
-    results <- setNames(data.frame(matrix(nrow=1, ncol=n.channels)), channels)
-    results[1,] <- as.list(rep(F, n.channels))
-    subtract.log <- results[0,] # record of keep values inputted into subtractOne
-    results$score <- 0
+  ### global data structures ###
+  keep <- NULL
+  channels <- colnames(x)
+  n.channels <- length(channels)
+  current.score <- 0
+  continue <- TRUE
+  results <- setNames(data.frame(matrix(nrow=1, ncol=n.channels)), channels)
+  results[1,] <- as.list(rep(F, n.channels))
+  subtract.log <- results[0,] # record of keep values inputted into subtractOne
+  results$score <- 0
 
-    hss.result = list() ## final output
+  hss.result = list() ## final output
 
-    #############################
-    #############################
-    #############################
-    ##### SCORING FUNCTIONS #####
-    #############################
-    #############################
-    #############################
-
-
-
-    # #######################
-    # ## SILHOUETTE SCORE  ##
-    # #######################
-    # getScore_silhouette  <- function(x, y, cols) {
-    #   df = x[, cols, with=F]
-    #   lda.out <- lda(y~., data=df)
-    #   dist.matrix <- df %>% dist() %>% as.matrix()
-    #   silhoutte.output <- cluster::silhouette(x = as.numeric(factor(y)), dmatrix = dist.matrix, do.clus.stat = TRUE, do.n.k=TRUE )
-    #
-    #   silh.result.all<- df %>%
-    #     bind_cols(., data.frame(cluster = silhoutte.output[,1], neighbor = silhoutte.output[,2], sil_width = silhoutte.output[,3] ))
-    #   sum.sil <- summary(silhoutte.output)
-    #   silhouette.score = mean(sum.sil$clus.avg.widths)
-    #   message(silhouette.score)
-    #   return(silhouette.score)
-    # }
-
-    ######################################
-    ## PIXEL CLASS ENTROPY (PCE) SCORE  ##
-    ######################################
-    # getScore_pce <- function(x, y, cols) {
-    #   ## pixel clonality scoring method
-    #   # performs LDA using columns provided and returns lowest euclidean distance between pop means
-    #   lda.out <- lda(y~., data=x[, cols, with=F])
-    #   data.pixels <- makeAxes(dt = x[, cols, with=F], co=lda.out$scaling)
-    #   data.pixels <- data.pixels[ , c("ld1","ld2" )]
-    #   data.pixels$labels <- y
-    #   colnames(data.pixels) <- c("x","y","labels")
-    #
-    #   if (!exists("pixel.grid")){
-    #     pixel.grid <<- create_pixel_grid()
-    #   }
-    #
-    #   density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
-    #   pce.score_output <- calculate_pceScore(data = density_metric_output)
-    #   pce.score <-  mean(pce.score_output$pce.score)
-    #   message(pce.score)
-    #   return(pce.score)
-    # }
+  #############################
+  #############################
+  #############################
+  ##### SCORING FUNCTIONS #####
+  #############################
+  #############################
+  #############################
 
 
+
+  # #######################
+  # ## SILHOUETTE SCORE  ##
+  # #######################
+  # getScore_silhouette  <- function(x, y, cols) {
+  #   df = x[, cols, with=F]
+  #   lda.out <- lda(y~., data=df)
+  #   dist.matrix <- df %>% dist() %>% as.matrix()
+  #   silhoutte.output <- cluster::silhouette(x = as.numeric(factor(y)), dmatrix = dist.matrix, do.clus.stat = TRUE, do.n.k=TRUE )
+  #
+  #   silh.result.all<- df %>%
+  #     bind_cols(., data.frame(cluster = silhoutte.output[,1], neighbor = silhoutte.output[,2], sil_width = silhoutte.output[,3] ))
+  #   sum.sil <- summary(silhoutte.output)
+  #   silhouette.score = mean(sum.sil$clus.avg.widths)
+  #   message(silhouette.score)
+  #   return(silhouette.score)
+  # }
+
+  ######################################
+  ## PIXEL CLASS ENTROPY (PCE) SCORE  ##
+  ######################################
+  # getScore_pce <- function(x, y, cols) {
+  #   ## pixel clonality scoring method
+  #   # performs LDA using columns provided and returns lowest euclidean distance between pop means
+  #   lda.out <- lda(y~., data=x[, cols, with=F])
+  #   data.pixels <- makeAxes(dt = x[, cols, with=F], co=lda.out$scaling)
+  #   data.pixels <- data.pixels[ , c("ld1","ld2" )]
+  #   data.pixels$labels <- y
+  #   colnames(data.pixels) <- c("x","y","labels")
+  #
+  #   if (!exists("pixel.grid")){
+  #     pixel.grid <<- create_pixel_grid()
+  #   }
+  #
+  #   density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
+  #   pce.score_output <- calculate_pceScore(data = density_metric_output)
+  #   pce.score <-  mean(pce.score_output$pce.score)
+  #   message(pce.score)
+  #   return(pce.score)
+  # }
 
 
 
 
 
-    ####################
-    ## begin analysis ##
-    ####################
 
-    ## original, euclidean distance based function
-    # } else if (score.method == "pixel.density") {
-    #   ## pixel density scoring method
-    #   getScore <<- function(cols) {
-    #     # performs LDA using columns provided and returns lowest euclidean distance between pop means
-    #     message(length(cols))
-    #     lda.out <<- lda(y~., data=x[, cols, with=F])
-    #     # message(lda.out)
-    #     df.density <<- makeAxes(dt = x[, cols, with=F], co=lda.out$scaling)
-    #     df.density <<- df.density[ , c("ld1","ld2" )]
-    #     df.density$labels <- factor(dat$labels)
-    #     colnames(df.density) <- c("x","y","labels")
-    #     coordinate.density <- list()
-    #     pixel.label.density_sc <- list()
-    #
-    #     pixel.grid <- create_pixel_grid()
-    #     density_metric_output <- generate_density_map(data = df.density, pixel.grid = pixel.grid)
-    #     # pixel.clonality_output <- calculate_entropy_metric(data = density_metric_output) %>% mutate(filename = file.name)
-    #     # pixel.clonality.metric <<- dplyr::bind_rows(pixel.clonality.metric, pixel.clonality_output)
-    #     coordinate.density <- dplyr::bind_rows(coordinate.density, density_metric_output )
-    #     density_metric_output <- calculate_pixel_density_metric(data=density_metric_output)
-    #     pixel.label.density_sc <-  dplyr::bind_rows(pixel.label.density_sc, density_metric_output)
-    #     density_metric_output <- aggregate_pixel_density_metric(data=density_metric_output)
-    #     # density_metric_output$filename = file.name
-    #     ave.density_metric_output <- density_metric_output %>% dplyr::filter(approach == "percent")
-    #     mean.score = mean(ave.density_metric_output$density.summary.normalized)
-    #
-    #     message(mean.score)
-    #     if (two.d) return(mean.score)
-    #     return(min(dist(lda.out$means %*% lda.out$scaling[,1])))
-    #   }
 
-    ##subset functions
-    addOne <- function() {
-      # Evaluates the addition of each channel not in keep to keep. Adds best and updates current.score
-      temp.results <- results[0,]
-      # message(keep)
-      # message(channels)
-      for (channel in channels[!channels %in% keep]) {
-        temp.keep <- c(keep, channel)
-        temp.score <- getScore(x, y, cols = temp.keep, score.method)
-        temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
-        # message(temp.results)
-        # temp.results <<-temp.results
-      }
-      colnames(temp.results) = colnames(results)
-      current.score <<- max(temp.results$score)
-      new.keep <- temp.results[temp.results$score == current.score, channels]
-      if (nrow(new.keep) > 1) new.keep <- new.keep[sample(.N,1)]
-      keep <<- channels[as.logical(new.keep)]
-      results <<- unique(rbind(results, temp.results))
+  ####################
+  ## begin analysis ##
+  ####################
+
+  ## original, euclidean distance based function
+  # } else if (score.method == "pixel.density") {
+  #   ## pixel density scoring method
+  #   getScore <<- function(cols) {
+  #     # performs LDA using columns provided and returns lowest euclidean distance between pop means
+  #     message(length(cols))
+  #     lda.out <<- lda(y~., data=x[, cols, with=F])
+  #     # message(lda.out)
+  #     df.density <<- makeAxes(dt = x[, cols, with=F], co=lda.out$scaling)
+  #     df.density <<- df.density[ , c("ld1","ld2" )]
+  #     df.density$labels <- factor(dat$labels)
+  #     colnames(df.density) <- c("x","y","labels")
+  #     coordinate.density <- list()
+  #     pixel.label.density_sc <- list()
+  #
+  #     pixel.grid <- create_pixel_grid()
+  #     density_metric_output <- generate_density_map(data = df.density, pixel.grid = pixel.grid)
+  #     # pixel.clonality_output <- calculate_entropy_metric(data = density_metric_output) %>% mutate(filename = file.name)
+  #     # pixel.clonality.metric <<- dplyr::bind_rows(pixel.clonality.metric, pixel.clonality_output)
+  #     coordinate.density <- dplyr::bind_rows(coordinate.density, density_metric_output )
+  #     density_metric_output <- calculate_pixel_density_metric(data=density_metric_output)
+  #     pixel.label.density_sc <-  dplyr::bind_rows(pixel.label.density_sc, density_metric_output)
+  #     density_metric_output <- aggregate_pixel_density_metric(data=density_metric_output)
+  #     # density_metric_output$filename = file.name
+  #     ave.density_metric_output <- density_metric_output %>% dplyr::filter(approach == "percent")
+  #     mean.score = mean(ave.density_metric_output$density.summary.normalized)
+  #
+  #     message(mean.score)
+  #     if (two.d) return(mean.score)
+  #     return(min(dist(lda.out$means %*% lda.out$scaling[,1])))
+  #   }
+
+  ##subset functions
+  addOne <- function() {
+    # Evaluates the addition of each channel not in keep to keep. Adds best and updates current.score
+    temp.results <- results[0,]
+    # message(keep)
+    # message(channels)
+    for (channel in channels[!channels %in% keep]) {
+      temp.keep <- c(keep, channel)
+      temp.score <- getScore(x, y, cols = temp.keep, score.method)
+      temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
+      # message(temp.results)
+      # temp.results <<-temp.results
     }
-
-    subtractOne <- function() {
-      # Evaluates the subtraction of each channel from keep. Removes worst if it improves score and updates current.score
-      # If a better subset is found, it calls itself.
-      # If this keep has been evaluted before, exits
-      # message("test")
-      subtract.log <<- rbind(subtract.log, as.list(channels %in% keep))
-      if (anyDuplicated(subtract.log) > 0) {
-        subtract.log <<- unique(subtract.log)
-        return()
-      }
-      temp.results <- results[0,]
-      # temp.results <<- temp.results
-      for (channel in keep) {
-        temp.keep <- keep[!keep %in% channel]
-        temp.score <- getScore(x, y, cols = temp.keep, score.method)
-        temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
-      }
-      # message(colnames(temp.results))
-      # message( colnames(results))
-      colnames(temp.results) = colnames(results)
-      # temp.results <<- temp.results
-      # current.score <<- current.score
-
-      if (max(temp.results$score) > current.score) {
-        # current.score <<- base::max(temp.results$score)
-        current.score <- max(temp.results$score)
-        new.keep <- temp.results[temp.results$score == current.score, channels]
-        if (nrow(new.keep) > 1) new.keep <- new.keep[1, ]
-        keep <<- channels[as.logical(new.keep)]
-        results <<- unique(rbind(results, temp.results))
-        subtractOne()
-      } else results <<- unique(rbind(results, temp.results))
-    }
-
-
-    #############################
-    #############################
-    #############################
-    initializeKeep <- function() {
-      # chooses the best scoring pair of markers to initialize keep
-      temp.results <- results[0,]
-
-      myChannels = expand.grid(channel.1 = channels, channel.2 = channels) %>% .[.$channel.1 != .$channel.2, ]
-      # message(myChannels)
-      temp.results = apply(myChannels, 1, function(row.temp.keep){
-        temp.keep = row.temp.keep %>% unlist()
-        temp.score = getScore(x, y, cols = temp.keep, score.method)
-        temp.result = as.list(channels %in% temp.keep) %>% append(temp.score)
-        return(temp.result)
-      })
-      # temp.results <<- temp.results
-      temp.results <- do.call("rbind", lapply(temp.results, unlist)) %>% data.frame()
-      colnames(temp.results) = colnames(results)
-
-      current.score <<- max(temp.results$score)
-      new.keep <- temp.results[temp.results$score==current.score, channels]
-      old.keep <- new.keep
-      if (nrow(new.keep) > 1)  new.keep <- new.keep[ which.max(apply(new.keep, 1, sum)), ]
-      keep <<- channels[as.logical(new.keep)]
-      results <<- unique(rbind(results, temp.results))
-    }
-
-    getElbow <- function(res) {
-      # takes results and returns the elbow point
-      res.lite <- res[ , "no.markers"] %>% unique() %>% .[-1 ] %>% data.frame(no.markers = .)
-      res.lite[, "V1"] <- lapply(split(res, res$no.markers) , function(df) {max(df$score)}) %>% unlist(.) %>% .[-1]
-      res.lite<-res.lite
-      slope <- (res.lite$V1[nrow(res.lite)] - res.lite$V1[1]) / (res.lite$no.markers[nrow(res.lite)] - res.lite$no.markers[1])
-      intercept <- res.lite$V1[1] - slope * res.lite$no.markers[1]
-      perp.slope <- -1 / slope
-      perp.int <- res.lite$V1 - (perp.slope * res.lite$no.markers)
-      xcross <- (intercept - perp.int) / (perp.slope - slope)
-      ycross <- slope * xcross + intercept
-      dists <-  sqrt((res.lite$no.markers - xcross)^2 + (res.lite$V1 - ycross)^2)
-      elbowi <- max(which(dists==max(dists))) # if dists are tie, take the largest number of channels
-      return(elbowi+1)
-    }
-
-    ### main ###
-    initializeKeep()
-    while(continue) {
-      message(paste("Number of markers:", length(keep)))
-      addOne()
-      message(paste("Number of markers:", length(keep)))
-      if (length(keep) > 3) subtractOne()
-      if (length(keep)==length(channels)) continue <- FALSE
-    }
-    results["no.markers"] = apply(results[, channels], 1, sum)
-    elbow <- getElbow(res=results)
-
-    markers <- results[results$no.markers==elbow, ] %>%
-      .[.$score==max(.$score), colnames(.) %in% channels] %>%
-      unlist() %>%
-      .[.==1] %>%
-      names(.)
-    # message(markers)
-    lda.out <- lda(y~., data=x[, markers])
-
-
-    ## save lda.out results
-    hss.result[["method"]] = score.method
-    hss.result[["finalMarkers"]] = markers
-    hss.result[["HSSscores"]] = results
-    hss.result[["ElbowPlot"]] = plotElbow(results = results, elbow = elbow)
-    hss.result[["HSS-LDA-model"]] = lda.out
-    ## restore options
-    options(dplyr.summarise.inform = TRUE) ## turn it back on
-
-    return(hss.result)
+    colnames(temp.results) = colnames(results)
+    current.score <<- max(temp.results$score)
+    new.keep <- temp.results[temp.results$score == current.score, channels]
+    if (nrow(new.keep) > 1) new.keep <- new.keep[sample(.N,1)]
+    keep <<- channels[as.logical(new.keep)]
+    results <<- unique(rbind(results, temp.results))
   }
 
+  subtractOne <- function() {
+    # Evaluates the subtraction of each channel from keep. Removes worst if it improves score and updates current.score
+    # If a better subset is found, it calls itself.
+    # If this keep has been evaluted before, exits
+    # message("test")
+    subtract.log <<- rbind(subtract.log, as.list(channels %in% keep))
+    if (anyDuplicated(subtract.log) > 0) {
+      subtract.log <<- unique(subtract.log)
+      return()
+    }
+    temp.results <- results[0,]
+    # temp.results <<- temp.results
+    for (channel in keep) {
+      temp.keep <- keep[!keep %in% channel]
+      temp.score <- getScore(x, y, cols = temp.keep, score.method)
+      temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
+    }
+    # message(colnames(temp.results))
+    # message( colnames(results))
+    colnames(temp.results) = colnames(results)
+    # temp.results <<- temp.results
+    # current.score <<- current.score
+
+    if (max(temp.results$score) > current.score) {
+      # current.score <<- base::max(temp.results$score)
+      current.score <- max(temp.results$score)
+      new.keep <- temp.results[temp.results$score == current.score, channels]
+      if (nrow(new.keep) > 1) new.keep <- new.keep[1, ]
+      keep <<- channels[as.logical(new.keep)]
+      results <<- unique(rbind(results, temp.results))
+      subtractOne()
+    } else results <<- unique(rbind(results, temp.results))
+  }
+
+
+  #############################
+  #############################
+  #############################
+  initializeKeep <- function() {
+    # chooses the best scoring pair of markers to initialize keep
+    temp.results <- results[0,]
+
+    myChannels = expand.grid(channel.1 = channels, channel.2 = channels) %>% .[.$channel.1 != .$channel.2, ]
+    # message(myChannels)
+    temp.results = apply(myChannels, 1, function(row.temp.keep){
+      temp.keep = row.temp.keep %>% unlist()
+      temp.score = getScore(x, y, cols = temp.keep, score.method)
+      temp.result = as.list(channels %in% temp.keep) %>% append(temp.score)
+      return(temp.result)
+    })
+    # temp.results <<- temp.results
+    temp.results <- do.call("rbind", lapply(temp.results, unlist)) %>% data.frame()
+    colnames(temp.results) = colnames(results)
+
+    current.score <<- max(temp.results$score)
+    new.keep <- temp.results[temp.results$score==current.score, channels]
+    old.keep <- new.keep
+    if (nrow(new.keep) > 1)  new.keep <- new.keep[ which.max(apply(new.keep, 1, sum)), ]
+    keep <<- channels[as.logical(new.keep)]
+    results <<- unique(rbind(results, temp.results))
+  }
+
+  getElbow <- function(res) {
+    # takes results and returns the elbow point
+    res.lite <- res[ , "no.markers"] %>% unique() %>% .[-1 ] %>% data.frame(no.markers = .)
+    res.lite[, "V1"] <- lapply(split(res, res$no.markers) , function(df) {max(df$score)}) %>% unlist(.) %>% .[-1]
+    res.lite<-res.lite
+    slope <- (res.lite$V1[nrow(res.lite)] - res.lite$V1[1]) / (res.lite$no.markers[nrow(res.lite)] - res.lite$no.markers[1])
+    intercept <- res.lite$V1[1] - slope * res.lite$no.markers[1]
+    perp.slope <- -1 / slope
+    perp.int <- res.lite$V1 - (perp.slope * res.lite$no.markers)
+    xcross <- (intercept - perp.int) / (perp.slope - slope)
+    ycross <- slope * xcross + intercept
+    dists <-  sqrt((res.lite$no.markers - xcross)^2 + (res.lite$V1 - ycross)^2)
+    elbowi <- max(which(dists==max(dists))) # if dists are tie, take the largest number of channels
+    return(elbowi+1)
+  }
+
+  ### main ###
+  initializeKeep()
+  while(continue) {
+    message(paste("Number of markers:", length(keep)))
+    addOne()
+    message(paste("Number of markers:", length(keep)))
+    if (length(keep) > 3) subtractOne()
+    if (length(keep)==length(channels)) continue <- FALSE
+  }
+  results["no.markers"] = apply(results[, channels], 1, sum)
+  elbow <- getElbow(res=results)
+
+  markers <- results[results$no.markers==elbow, ] %>%
+    .[.$score==max(.$score), colnames(.) %in% channels] %>%
+    unlist() %>%
+    .[.==1] %>%
+    names(.)
+  # message(markers)
+  lda.out <- lda(y~., data=x[, markers])
+
+
+  ## save lda.out results
+  hss.result[["method"]] = score.method
+  hss.result[["finalMarkers"]] = markers
+  hss.result[["HSSscores"]] = results
+  hss.result[["ElbowPlot"]] = plotElbow(results = results, elbow = elbow)
+  hss.result[["HSS-LDA-model"]] = lda.out
+  ## restore options
+  options(dplyr.summarise.inform = TRUE) ## turn it back on
+
+  return(hss.result)
+}
+
 #' @title makeAxes
-#' @description makeAxes: function that generates new LDA axes given an LDA model coefficients
+#' @description makeAxes: function that generates new HSS-LDA axes given an LDA model coefficients
 #' @param df a dataframe of cells (rows) by markers/genes (columns)
 #' @param co the dataframe of LDA coefficients from MASS::lda.
 #' @keywords internal
 #' @export
-makeAxes <- function(df=dat, co=coefficient) {
+makeAxes <- function(df, co=coefficients) {
   # makes new axes based on coefficients
   # Inputs:
   #   df - data.frame of data
@@ -649,7 +646,9 @@ makeAxes <- function(df=dat, co=coefficient) {
   # Outputs:
   #   df - data.frame
   x <- as.matrix(df[, rownames(co)])
-  df = cbind(df, x %*% co)
+  HSS.LDs = x %*% co
+  colnames(HSS.LDs) = paste0("HSS_", colnames(HSS.LDs), sep = "")
+  df = cbind(df, HSS.LDs)
   return(df)
 }
 

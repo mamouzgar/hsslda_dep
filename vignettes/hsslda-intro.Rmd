@@ -128,7 +128,7 @@ myColScale = ggplot2::scale_color_manual(values = viridis.colors)
 
 
 ```{r}
-ggplot2::ggplot(lda.df,ggplot2::aes(x = LD1, y = LD2, color = labels)) +
+ggplot2::ggplot(lda.df,ggplot2::aes(x = HSS_LD1, y = HSS_LD2, color = labels)) +
   ggplot2::geom_point() +
   myColScale
 ```
@@ -175,8 +175,6 @@ Questions, comments, or general feedback:
 
 
 amouzgar@stanford.edu
-
-
 
 
 
