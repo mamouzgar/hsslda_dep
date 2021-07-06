@@ -11,9 +11,9 @@ runHSS(x, y, score.method, custom.score.method = NULL)
 
 \item{y}{vector of class labels}
 
-\item{score.method}{scoring metric to use to perform HSS}
+\item{score.method}{scoring metric for feature selection using HSS. Options include: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.}
 
-\item{custom.score.method}{function for your custom scoring metric.}
+\item{custom.score.method}{function for your custom scoring metric. Score.method must be 'custom'}
 }
 \description{
 This function runs hybrid subset selection.
