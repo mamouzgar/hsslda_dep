@@ -24,6 +24,7 @@
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr rename
 #' @importFrom dplyr summarize
+#' @importFrom dplyr n
 #' @importFrom dplyr mutate
 #' @importFrom tidyr spread
 #' @importFrom dplyr rowwise
