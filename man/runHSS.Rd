@@ -4,7 +4,7 @@
 \alias{runHSS}
 \title{runHSS}
 \usage{
-runHSS(x, y, score.method, custom.score.method = NULL)
+runHSS(x, y, score.method, custom.score.method = NULL, downsample = TRUE)
 }
 \arguments{
 \item{x}{table with predictors of interest}
@@ -14,6 +14,8 @@ runHSS(x, y, score.method, custom.score.method = NULL)
 \item{score.method}{scoring metric for feature selection using HSS. Options include: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.}
 
 \item{custom.score.method}{function for your custom scoring metric. Score.method must be 'custom'}
+
+\item{downsample}{boolean indicating whether to downsample data. Defaults to TRUE. Downsamples to 5000 cells per class label, or balanced sampling based on the class label with minimum # of cells.}
 }
 \description{
 This function runs hybrid subset selection.

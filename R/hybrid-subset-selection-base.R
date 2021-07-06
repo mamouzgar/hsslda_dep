@@ -16,8 +16,6 @@
 #' @importFrom ggplot2 geom_line
 #' @importFrom ggplot2 geom_point
 #'
-#' @import magrittr
-#'
 #' @importFrom dplyr filter
 #' @importFrom dplyr select
 #' @importFrom dplyr group_by
@@ -27,14 +25,15 @@
 #' @importFrom dplyr n
 #' @importFrom dplyr %>%
 #' @importFrom dplyr mutate
-#' @importFrom tidyr spread
 #' @importFrom dplyr rowwise
-#' @importFrom tidyr gather
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr left_join
 #' @importFrom dplyr right_join
 #' @importFrom dplyr full_join
 #' @importFrom dplyr case_when
+#' @importFrom dplyr sample_n
+#' @importFrom tidyr spread
+#' @importFrom tidyr gather
 #'
 #' @importFrom MASS lda
 #' @importFrom stats dist
@@ -65,6 +64,8 @@ plotElbow <- function(results, elbow = NULL){
 
   return(p.Elbow)
 }
+
+
 
 
 
@@ -124,7 +125,7 @@ create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
 generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, ybreaks = 100) {
 
   # data_pixel_counts <- lapply(unique(data$labels), function(class.label) {
-  #   print(class.label)
+  #   message(class.label)
 
 
 
@@ -186,7 +187,7 @@ computePCEscore <- function(data) {
   ## data in format of x(axis1), y(axis2), class label of interest
 
   if (!exists("pixel.grid")){
-    pixel.grid <<- create_pixel_grid()
+    pixel.grid <- create_pixel_grid()
   }
 
   density_metric_output <- generate_density_map(data = data, pixel.grid = pixel.grid)
@@ -203,7 +204,7 @@ computePCEscore <- function(data) {
 # calculate_pixelDensityScore <- function(data = density_metric_output) {
 #
 #   data <- na.omit(data) %>% ungroup()
-#   # print("calculate-pixel-clonality")
+#   # message("calculate-pixel-clonality")
 #
 #   pixelDensity.score <- data %>%
 #     dplyr::ungroup() %>%
@@ -240,7 +241,7 @@ getScore_euclidean <- function(x, y, cols) {
   # performs LDA using columns provided and returns lowest euclidean distance between pop means
   lda.out <- lda(y~., data=x[, cols])
   eucl_score = min(dist(lda.out$means %*% lda.out$scaling[,1:2]))
-  print(eucl_score)
+  # message(eucl_score)
   return(eucl_score)
 }
 
@@ -263,7 +264,7 @@ getScore_silhouette  <- function(x, y, cols) {
   silh.result.all = df %>% cbind(., data.frame(cluster = silhoutte.output[,1], neighbor = silhoutte.output[,2], sil_width = silhoutte.output[,3] ))
   sum.sil = summary(silhoutte.output)
   silhouette.score = mean(sum.sil$clus.avg.widths)
-  print(silhouette.score)
+  # message(silhouette.score)
   return(silhouette.score)
 }
 
@@ -289,7 +290,7 @@ getScore_pce <- function(x, y, cols) {
   colnames(data.pixels) <- c("x","y","labels")
 
   pce.score = computePCEscore(data = data.pixels)
-  print(pce.score)
+  # message(pce.score)
   return(pce.score)
 }
 
@@ -309,7 +310,7 @@ getScore_pce <- function(x, y, cols) {
 #   density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
 #   pixelDensity_output <- calculate_pixelDensityScore(data = density_metric_output)
 #   pixelDensity.score <-  mean(pixelDensity_output$density.summary.normalized)
-#   # print(pixelDensity.score)
+#   # message(pixelDensity.score)
 #   return(pixelDensity.score)
 # }
 
@@ -341,21 +342,21 @@ getScore_custom <- function(x, y, cols, custom.score.method, ...) {
 getScore <- function(x , y, cols, score.method) {
   if (length(cols) > 1) {
     if (score.method == "euclidean") {
-      # print("euclidean")
+      # message("euclidean")
       scoreFunction <- getScore_euclidean(x, y, cols)
       return(scoreFunction)
     } else if (score.method == "silhouette") {
-      # print("silhouette")
+      # message("silhouette")
       ## pixel clonality scoring method
       scoreFunction <- getScore_silhouette(x, y, cols)
       return(scoreFunction)
     } else if (score.method == "pixel.entropy") {
-      # print("pixel.entropy")
+      # message("pixel.entropy")
       ## pixel clonality scoring method
       scoreFunction <- getScore_pce(x, y, cols)
       return(scoreFunction)
     } else if (score.method == "pixel.density") {
-      # print("pixel.density")
+      # message("pixel.density")
       ## pixel clonality scoring method
       scoreFunction <- getScore_pixelDensity(x, y, cols)
       return(scoreFunction)
@@ -364,7 +365,7 @@ getScore <- function(x , y, cols, score.method) {
       if (is.null(custom.score.method)) {
         stop("Must provide a custom score method")
       }
-      # print("custom")
+      # message("custom")
       scoreFunction <- getScore_custom(cols, x, y, custom.score.method)
       return(scoreFunction)
     }
@@ -399,7 +400,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     subtract.log <- results[0,] # record of keep values inputted into subtractOne
     results$score <- 0
 
-    hss.results = list() ## final output
+    hss.result = list() ## final output
 
     #############################
     #############################
@@ -424,7 +425,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     #     bind_cols(., data.frame(cluster = silhoutte.output[,1], neighbor = silhoutte.output[,2], sil_width = silhoutte.output[,3] ))
     #   sum.sil <- summary(silhoutte.output)
     #   silhouette.score = mean(sum.sil$clus.avg.widths)
-    #   print(silhouette.score)
+    #   message(silhouette.score)
     #   return(silhouette.score)
     # }
 
@@ -447,7 +448,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     #   density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
     #   pce.score_output <- calculate_pceScore(data = density_metric_output)
     #   pce.score <-  mean(pce.score_output$pce.score)
-    #   print(pce.score)
+    #   message(pce.score)
     #   return(pce.score)
     # }
 
@@ -466,9 +467,9 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     #   ## pixel density scoring method
     #   getScore <<- function(cols) {
     #     # performs LDA using columns provided and returns lowest euclidean distance between pop means
-    #     print(length(cols))
+    #     message(length(cols))
     #     lda.out <<- lda(y~., data=x[, cols, with=F])
-    #     # print(lda.out)
+    #     # message(lda.out)
     #     df.density <<- makeAxes(dt = x[, cols, with=F], co=lda.out$scaling)
     #     df.density <<- df.density[ , c("ld1","ld2" )]
     #     df.density$labels <- factor(dat$labels)
@@ -488,7 +489,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     #     ave.density_metric_output <- density_metric_output %>% dplyr::filter(approach == "percent")
     #     mean.score = mean(ave.density_metric_output$density.summary.normalized)
     #
-    #     print(mean.score)
+    #     message(mean.score)
     #     if (two.d) return(mean.score)
     #     return(min(dist(lda.out$means %*% lda.out$scaling[,1])))
     #   }
@@ -497,13 +498,13 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     addOne <- function() {
       # Evaluates the addition of each channel not in keep to keep. Adds best and updates current.score
       temp.results <- results[0,]
-      # print(keep)
-      # print(channels)
+      # message(keep)
+      # message(channels)
       for (channel in channels[!channels %in% keep]) {
         temp.keep <- c(keep, channel)
         temp.score <- getScore(x, y, cols = temp.keep, score.method)
         temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
-        # print(temp.results)
+        # message(temp.results)
         # temp.results <<-temp.results
       }
       colnames(temp.results) = colnames(results)
@@ -518,7 +519,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       # Evaluates the subtraction of each channel from keep. Removes worst if it improves score and updates current.score
       # If a better subset is found, it calls itself.
       # If this keep has been evaluted before, exits
-      # print("test")
+      # message("test")
       subtract.log <<- rbind(subtract.log, as.list(channels %in% keep))
       if (anyDuplicated(subtract.log) > 0) {
         subtract.log <<- unique(subtract.log)
@@ -531,8 +532,8 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
         temp.score <- getScore(x, y, cols = temp.keep, score.method)
         temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
       }
-      # print(colnames(temp.results))
-      # print( colnames(results))
+      # message(colnames(temp.results))
+      # message( colnames(results))
       colnames(temp.results) = colnames(results)
       # temp.results <<- temp.results
       # current.score <<- current.score
@@ -557,7 +558,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       temp.results <- results[0,]
 
       myChannels = expand.grid(channel.1 = channels, channel.2 = channels) %>% .[.$channel.1 != .$channel.2, ]
-      # print(myChannels)
+      # message(myChannels)
       temp.results = apply(myChannels, 1, function(row.temp.keep){
         temp.keep = row.temp.keep %>% unlist()
         temp.score = getScore(x, y, cols = temp.keep, score.method)
@@ -570,7 +571,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
 
       current.score <<- max(temp.results$score)
       new.keep <- temp.results[temp.results$score==current.score, channels]
-      old.keep <<- new.keep
+      old.keep <- new.keep
       if (nrow(new.keep) > 1)  new.keep <- new.keep[ which.max(apply(new.keep, 1, sum)), ]
       keep <<- channels[as.logical(new.keep)]
       results <<- unique(rbind(results, temp.results))
@@ -580,7 +581,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       # takes results and returns the elbow point
       res.lite <- res[ , "no.markers"] %>% unique() %>% .[-1 ] %>% data.frame(no.markers = .)
       res.lite[, "V1"] <- lapply(split(res, res$no.markers) , function(df) {max(df$score)}) %>% unlist(.) %>% .[-1]
-      res.lite<<-res.lite
+      res.lite<-res.lite
       slope <- (res.lite$V1[nrow(res.lite)] - res.lite$V1[1]) / (res.lite$no.markers[nrow(res.lite)] - res.lite$no.markers[1])
       intercept <- res.lite$V1[1] - slope * res.lite$no.markers[1]
       perp.slope <- -1 / slope
@@ -595,9 +596,9 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     ### main ###
     initializeKeep()
     while(continue) {
-      print(paste("Number of markers:", length(keep)))
+      message(paste("Number of markers:", length(keep)))
       addOne()
-      print(paste("Number of markers:", length(keep)))
+      message(paste("Number of markers:", length(keep)))
       if (length(keep) > 3) subtractOne()
       if (length(keep)==length(channels)) continue <- FALSE
     }
@@ -609,20 +610,20 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       unlist() %>%
       .[.==1] %>%
       names(.)
-    # print(markers)
+    # message(markers)
     lda.out <- lda(y~., data=x[, markers])
 
 
     ## save lda.out results
-    hss.results[["method"]] = score.method
-    hss.results[["finalMarkers"]] = markers
-    hss.results[["HSSscores"]] = results
-    hss.results[["ElbowPlot"]] = plotElbow(results = results, elbow = elbow)
-    hss.results[["HSS-LDA-model"]] = lda.out
+    hss.result[["method"]] = score.method
+    hss.result[["finalMarkers"]] = markers
+    hss.result[["HSSscores"]] = results
+    hss.result[["ElbowPlot"]] = plotElbow(results = results, elbow = elbow)
+    hss.result[["HSS-LDA-model"]] = lda.out
     ## restore options
     options(dplyr.summarise.inform = TRUE) ## turn it back on
 
-    return(hss.results)
+    return(hss.result)
   }
 
 #' @title makeAxes
@@ -645,26 +646,77 @@ makeAxes <- function(df=dat, co=coefficient) {
 }
 
 
+
+
+#' @title downSampleData
+#' @description Downsamples data to one of 3 conditions: 5000 cells in each class label or the class label with the minimum # of cells
+#' @param x table with predictors of interest
+#' @param y vector of class labels
+#' @noRd
+downSampleData <- function(x, y){
+
+  df = cbind(x,labels = y)
+  rownames(df) = paste0("inputID", rownames(df))
+  inputIDs = rownames(df)
+  df[["inputIDs"]] = inputIDs
+
+  min.value = min(table(y))
+  if (min.value >= 5000) {
+    message("Downsampling data to 5000 cells in each class label")
+    x = df %>% group_by(labels) %>% sample_n(5000)
+  } else  if (min.value <= 5000) {
+    message("Downsampling data to ", min.value," cells in each class label, which is the class label with the minimum # of cells")
+    print(table(train.y))
+
+    x = df %>% group_by(labels) %>% sample_n(min(table(y)))
+  }
+  downsampledCells = df
+  downsampledCells$inputIDs = downsampledCells$inputIDs %in% x$inputIDs
+  message("Downsampling data to ", min.value," cells in each class label, which is the class label with the minimum # of cells")
+  return(downsampledCells) ## returns a subsetted dataset with labels relative to original cells that were INPUT
+}
+
+
+
 #' @title runHSS
 #' @description This function runs hybrid subset selection.
 #' @param x table with predictors of interest
 #' @param y vector of class labels
 #' @param score.method scoring metric for feature selection using HSS. Options include: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.
 #' @param custom.score.method function for your custom scoring metric. Score.method must be 'custom'
+#' @param downsample boolean indicating whether to downsample data. Defaults to TRUE. Downsamples to 5000 cells per class label, or balanced sampling based on the class label with minimum # of cells.
 #' @keywords internal
 #' @export
-runHSS <- function(x, y, score.method, custom.score.method = NULL){
+runHSS <- function(x, y, score.method, custom.score.method = NULL, downsample = TRUE){
   if (!score.method %in% c("euclidean","silhouette", "pixel.density","pixel.entropy")){
     stop("score.method method must be: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.")
   }
 
-  print(score.method)
+  ## save original input data
+  orig.data = x
+
+  if (downsample == TRUE) {
+    downsampledCells = downSampleData(x = x, y = y)
+    downsampledCells[["inputIDs"]] = NULL
+    cells.included.in.downsampling.analysis = downsampledCells$inputIDs ## a boolean vector of whether the input cells were included in the downsampling analysis
+    x = downsampledCells[colnames(x)]
+  } else {
+    message("Using all input cells for HSS-LDA...")
+    cells.included.in.downsampling.analysis = TRUE
+  }
+
+  message("Optimizing dimensionality reduction using ", score.method, " metric...")
+
+  ## HSS results
   hss.results <- hybridSubsetSelection(x, y, score.method = score.method, custom.score.method = custom.score.method)
-  hss.results <<-hss.results
   coefficients = hss.results[["HSS-LDA-model"]]$scaling
-  dat <- makeAxes(df=x, co=coefficients)
+  dat <- makeAxes(df=orig.data, co=coefficients)
   dat[["labels"]] = y
   hss.results[["HSS-LDA-result"]] = dat
+
+  ## add boolean vector of downsampled cell labels
+  hss.results[["downsampled.cells.included.in.analysis"]] = cells.included.in.downsampling.analysis
+
   return(hss.results)
 }
 

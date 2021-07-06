@@ -9,21 +9,33 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
+# LDA with Hybrid Subset Selection (HSS)
+Meelad Amouzgar and David Glass
+
+Bendall lab @ Stanford University
+
+Not permitted for distribution outside of the Bendall lab @ Stanford 
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = getwd())
 
 ```
 
-Install and load the hsslda library:
+
+
+## Installation instructons:
 
 You can install hsslda using:
+```{r eval=FALSE}
+remotes::install_github("mamouzgar/hsslda", build_vignettes = FALSE)
+```
 
+Or if you'd like the introductory vignette seen below included in your Rstudio installation of hsslda, you can use:
 ```{r eval=FALSE}
 remotes::install_github("mamouzgar/hsslda", build_vignettes = TRUE)
 ```
-
-
 
 ```{r, warning=FALSE, include=FALSE}
 library(magrittr)
@@ -60,13 +72,14 @@ runHSS takes 3 inputs:
 
 3) score.method: A scoring metric to use for feature selection, which can include: 'euclidean', 'silhouette', 'pixel.entropy', 'pixel.density', or 'custom'
 
+4) (optional) downsample: Boolean, defaults to TRUE. Downsamples data to improve runtime. Set to FALSE to use all input data.
 
 Here we will run HSS using the default scoring method: euclidean distance.Note that scoring metrics like silhouette or pixel class entropy (PCE) score will require additional package dependencies. 
-```{r, echo=TRUE, results = 'hide'}
+```{r, echo=TRUE}
 channels = c('GLUT1', 'HK2', 'GAPDH', 'LDHA', 'MCT1', 'PFKFB4', 'IDH2', 'CyclinB1', 'GLUD12', 'CS', 'OGDH', 'CytC', 'ATP5A', 'S6_p', 'HIF1A')
 train.x = TcellHartmann2020_sampleData[channels]
 train.y = TcellHartmann2020_sampleData[['labels']]
-hss.result = runHSS(x = train.x, y = train.y, score.method = 'euclidean')
+hss.result = runHSS(x = train.x, y = train.y, score.method = 'pixel.entropy')
 
 ```
 
@@ -126,11 +139,13 @@ lda.df.newData = makeAxes(df = newdata, co =hss.result$`HSS-LDA-model`$scaling)
 You can also add your own custom separation metric to perform feature selection with by changing score.method = 'custom' and adding custom function. 
 The custom function must take in as input:
 
-1) x: dataframe of all your data
+1) x: dataframe of all your data.
 
-2) y: vector of class labels matching training data rows
+2) y: vector of class labels matching training data rows.
 
-3) cols: vector of column names to implement HSS-LDA
+3) score.method:'custom'
+
+4) custom.score.method: the function for your custom separation metric.
 
 
 ```{r eval=FALSE}
@@ -139,6 +154,10 @@ hss.resultCustom = runHSS(x = train.x, y = train.y, score.method = 'custom', cus
 
 
 And that's how you use LDA with Hybrid Subset Selection!
+
+
+
+
 
 
 
