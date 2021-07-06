@@ -11,7 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = )
+knitr::opts_knit$set(root.dir = getwd())
 
 ```
 
@@ -35,8 +35,8 @@ library(hsslda)
 
 Here we read-in the example data
 ```{r, results = 'hide'}
-# Tcell_intro = read.csv("hsslda/data/TcellHartmann2020_sampleData.txt",sep="\t", stringsAsFactors = T)
-Tcell_intro = data(TcellHartmann2020_sampleData)
+Tcell_intro = read.csv("data/TcellHartmann2020_sampleData.txt",sep="\t", stringsAsFactors = T)
+# Tcell_intro = data(TcellHartmann2020_sampleData)
 
 ```
 
