@@ -647,8 +647,8 @@ makeAxes <- function(df=dat, co=coefficient) {
 #' @description This function runs hybrid subset selection.
 #' @param x table with predictors of interest
 #' @param y vector of class labels
-#' @param score.method scoring metric to use to perform HSS
-#' @param custom.score.method function for your custom scoring metric.
+#' @param score.method scoring metric for feature selection using HSS. Options include: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.
+#' @param custom.score.method function for your custom scoring metric. Score.method must be 'custom'
 #' @keywords internal
 #' @export
 runHSS <- function(x, y, score.method, custom.score.method = NULL){
