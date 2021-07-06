@@ -25,6 +25,7 @@
 #' @importFrom dplyr rename
 #' @importFrom dplyr summarize
 #' @importFrom dplyr n
+#' @importFrom dplyr %>%
 #' @importFrom dplyr mutate
 #' @importFrom tidyr spread
 #' @importFrom dplyr rowwise
@@ -237,8 +238,9 @@ computePCEscore <- function(data) {
 getScore_euclidean <- function(x, y, cols) {
   # performs LDA using columns provided and returns lowest euclidean distance between pop means
   lda.out <- lda(y~., data=x[, cols])
-  # print(min(dist(lda.out$means %*% lda.out$scaling[,1:2])))
-  return(min(dist(lda.out$means %*% lda.out$scaling[,1:2])))
+  eucl_score = min(dist(lda.out$means %*% lda.out$scaling[,1:2]))
+  print(eucl_score)
+  return(eucl_score)
 }
 
 #######################
@@ -260,7 +262,7 @@ getScore_silhouette  <- function(x, y, cols) {
   silh.result.all = df %>% cbind(., data.frame(cluster = silhoutte.output[,1], neighbor = silhoutte.output[,2], sil_width = silhoutte.output[,3] ))
   sum.sil = summary(silhoutte.output)
   silhouette.score = mean(sum.sil$clus.avg.widths)
-  # print(silhouette.score)
+  print(silhouette.score)
   return(silhouette.score)
 }
 
@@ -286,7 +288,7 @@ getScore_pce <- function(x, y, cols) {
   colnames(data.pixels) <- c("x","y","labels")
 
   pce.score = computePCEscore(data = data.pixels)
-  # print(pce.score)
+  print(pce.score)
   return(pce.score)
 }
 
@@ -494,10 +496,9 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     addOne <- function() {
       # Evaluates the addition of each channel not in keep to keep. Adds best and updates current.score
       temp.results <- results[0,]
-      print(keep)
-      print(channels)
+      # print(keep)
+      # print(channels)
       for (channel in channels[!channels %in% keep]) {
-        # print("LOL")
         temp.keep <- c(keep, channel)
         temp.score <- getScore(x, y, cols = temp.keep, score.method)
         temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
@@ -567,7 +568,6 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       colnames(temp.results) = colnames(results)
 
       current.score <<- max(temp.results$score)
-      print(current.score)
       new.keep <- temp.results[temp.results$score==current.score, channels]
       old.keep <<- new.keep
       if (nrow(new.keep) > 1)  new.keep <- new.keep[ which.max(apply(new.keep, 1, sum)), ]
@@ -602,15 +602,13 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     }
     results["no.markers"] = apply(results[, channels], 1, sum)
     elbow <- getElbow(res=results)
-    print(elbow)
 
     markers <- results[results$no.markers==elbow, ] %>%
       .[.$score==max(.$score), colnames(.) %in% channels] %>%
       unlist() %>%
       .[.==1] %>%
       names(.)
-    print(markers)
-    print("testing")
+    # print(markers)
     lda.out <- lda(y~., data=x[, markers])
 
 
