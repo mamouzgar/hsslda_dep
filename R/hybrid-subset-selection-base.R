@@ -16,6 +16,8 @@
 #' @importFrom ggplot2 geom_line
 #' @importFrom ggplot2 geom_point
 #'
+#' @import magrittr
+#'
 #' @importFrom dplyr filter
 #' @importFrom dplyr select
 #' @importFrom dplyr group_by
@@ -26,6 +28,10 @@
 #' @importFrom tidyr spread
 #' @importFrom dplyr rowwise
 #' @importFrom tidyr gather
+#' @importFrom dplyr bind_rows
+#' @importFrom dplyr left_join
+#' @importFrom dplyr right_join
+#' @importFrom dplyr full_join
 #'
 #' @importFrom MASS lda
 #' @importFrom stats dist
