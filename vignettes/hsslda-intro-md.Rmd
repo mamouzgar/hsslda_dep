@@ -10,8 +10,10 @@ output:
 
 # LDA with Hybrid Subset Selection (HSS)
 Meelad Amouzgar and David Glass
+
 Bendall lab @ Stanford University
-not permitted for distribution outside of the Bendall lab @ Stanford 
+
+Not permitted for distribution outside of the Bendall lab @ Stanford 
 
 
 
