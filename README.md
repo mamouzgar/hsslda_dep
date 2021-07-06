@@ -1,8 +1,22 @@
 LDA with Hybrid Subset Selection (HSS)
 ======================================
 
-Meelad Amouzgar and David Glass Bendall lab @ Stanford University not
-permitted for distribution outside of the Bendall lab @ Stanford
+Authors: Meelad Amouzgar and David Glass
+
+Bendall lab @ Stanford University
+
+Not permitted for distribution outside of the Bendall lab @ Stanford
+
+Introduction:
+-------------
+
+Linear Discriminant Analysis (LDA) is a classification algorithm that
+we’ve repurposed for supervised dimensionality reduction of single-cell
+data. LDA identifies linear combinations of predictors that optimally
+separate a priori labels, enabling users to tailor visualizations to
+separate specific aspects of cellular heterogeneity. We implement LDA
+with feature selection by Hybrid Subset Selection (HSS) in this R
+package, called hsslda.
 
 Installation instructons:
 -------------------------
@@ -13,8 +27,9 @@ You can install hsslda using:
 remotes::install_github("mamouzgar/hsslda", build_vignettes = FALSE)
 ```
 
-Or if you’d like the introductory vignette seen below included in your
-Rstudio installation of hsslda, you can use:
+The github page includes an introduction to the package. Or if you’d
+like the introductory vignette seen below included in your Rstudio
+installation of hsslda, you can use:
 
 ``` r
 remotes::install_github("mamouzgar/hsslda", build_vignettes = TRUE)
@@ -55,6 +70,9 @@ head(TcellHartmann2020_sampleData,3)
     ## 2 0.08144526   day0
     ## 3 0.09690983   day0
 
+How to run HSS-LDA:
+-------------------
+
 You can run hybrid subset selection on a dataset using runHSS().
 
 runHSS takes 3 inputs:
@@ -67,6 +85,9 @@ runHSS takes 3 inputs:
     can include: ‘euclidean’, ‘silhouette’, ‘pixel.entropy’,
     ‘pixel.density’, or ‘custom’
 
+4.  (optional) downsample: Boolean, defaults to TRUE. Downsamples data
+    to improve runtime. Set to FALSE to use all input data.
+
 Here we will run HSS using the default scoring method: euclidean
 distance.Note that scoring metrics like silhouette or pixel class
 entropy (PCE) score will require additional package dependencies.
@@ -75,8 +96,79 @@ entropy (PCE) score will require additional package dependencies.
 channels = c('GLUT1', 'HK2', 'GAPDH', 'LDHA', 'MCT1', 'PFKFB4', 'IDH2', 'CyclinB1', 'GLUD12', 'CS', 'OGDH', 'CytC', 'ATP5A', 'S6_p', 'HIF1A')
 train.x = TcellHartmann2020_sampleData[channels]
 train.y = TcellHartmann2020_sampleData[['labels']]
-hss.result = runHSS(x = train.x, y = train.y, score.method = 'euclidean')
+hss.result = runHSS(x = train.x, y = train.y, score.method = 'euclidean', downsample = FALSE)
 ```
+
+    ## Using all input cells for HSS-LDA...
+
+    ## Optimizing dimensionality reduction using euclidean metric...
+
+    ## Number of markers: 2
+
+    ## Number of markers: 3
+    ## Number of markers: 3
+
+    ## Number of markers: 4
+    ## Number of markers: 4
+
+    ## Number of markers: 5
+    ## Number of markers: 5
+
+    ## Number of markers: 6
+    ## Number of markers: 6
+
+    ## Number of markers: 7
+    ## Number of markers: 7
+
+    ## Number of markers: 8
+    ## Number of markers: 8
+
+    ## Number of markers: 9
+    ## Number of markers: 9
+
+    ## Number of markers: 10
+
+    ## Number of markers: 9
+
+    ## Number of markers: 10
+    ## Number of markers: 10
+
+    ## Number of markers: 11
+
+    ## Number of markers: 10
+
+    ## Number of markers: 11
+    ## Number of markers: 11
+
+    ## Number of markers: 12
+
+    ## Number of markers: 11
+
+    ## Number of markers: 12
+    ## Number of markers: 12
+
+    ## Number of markers: 13
+
+    ## Number of markers: 12
+
+    ## Number of markers: 13
+    ## Number of markers: 13
+
+    ## Number of markers: 14
+
+    ## Number of markers: 13
+
+    ## Number of markers: 14
+    ## Number of markers: 14
+
+    ## Number of markers: 15
+
+    ## Number of markers: 14
+
+    ## Number of markers: 15
+
+Output summary:
+---------------
 
 The final hss.result object outputted from runHSS contains a few
 elements, the most important ones are highlighted below:
@@ -92,13 +184,18 @@ elements, the most important ones are highlighted below:
     inputted markers, class labels, and linear discriminants from the
     opimal model.
 
+5.  downsampled.cells.included.in.analysis: A boolean vector of rows
+    included in the downsampling analysis. If downsampling was not
+    performed, all values are TRUE. The final output results includes
+    all data projected onto the HSS-LD axes.
+
 You can visualize the elbow plot, which is ggplot configurable:
 
 ``` r
 hss.result$ElbowPlot
 ```
 
-![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/Rtmpdds7RI/preview-52ef70d8ceab.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/RtmpTUJcFS/preview-5ff67ccb117c.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 The final output object contains a merged dataframe of your markers,
 class labels, and newly generated LD axes
@@ -121,7 +218,7 @@ head(lda.df, 3)
     ## 2 0.08144526 -1.4912720 -1.858684 4.190646 4.693052 -2.52678835   day0
     ## 3 0.09690983 -1.0026704 -2.758428 2.453262 3.370301  0.09091075   day0
 
-![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/Rtmpdds7RI/preview-52ef70d8ceab.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/RtmpTUJcFS/preview-5ff67ccb117c.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
 The final HSS-LDA model is also saved, and can be used like any R model.
 
@@ -180,14 +277,20 @@ You can also add your own custom separation metric to perform feature
 selection with by changing score.method = ‘custom’ and adding custom
 function. The custom function must take in as input:
 
-1.  x: dataframe of all your data
+1.  x: dataframe of all your data.
 
-2.  y: vector of class labels matching training data rows
+2.  y: vector of class labels matching training data rows.
 
-3.  cols: vector of column names to implement HSS-LDA
+3.  score.method:‘custom’
+
+4.  custom.score.method: the function for your custom separation metric.
 
 ``` r
 hss.resultCustom = runHSS(x = train.x, y = train.y, score.method = 'custom', custom.score.method = myCustomFunction)
 ```
 
 And that’s how you use LDA with Hybrid Subset Selection!
+
+Questions, comments, or general feedback:
+
+<a href="mailto:amouzgar@stanford.edu" class="email">amouzgar@stanford.edu</a>

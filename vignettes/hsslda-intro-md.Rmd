@@ -9,12 +9,13 @@ output:
 
 
 # LDA with Hybrid Subset Selection (HSS)
-Meelad Amouzgar and David Glass
+Authors: Meelad Amouzgar and David Glass
+
 
 Bendall lab @ Stanford University
 
-Not permitted for distribution outside of the Bendall lab @ Stanford 
 
+Not permitted for distribution outside of the Bendall lab @ Stanford 
 
 
 ```{r setup, include=FALSE}
@@ -22,6 +23,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = getwd())
 
 ```
+
+## Introduction:
+Linear Discriminant Analysis (LDA) is a classification algorithm that we've repurposed for supervised dimensionality reduction of single-cell data. LDA identifies linear combinations of predictors that optimally separate a priori labels, enabling users to tailor visualizations to separate specific aspects of cellular heterogeneity. We implement LDA with feature selection by Hybrid Subset Selection (HSS) in this R package, called hsslda. 
 
 
 
@@ -32,6 +36,8 @@ You can install hsslda using:
 remotes::install_github("mamouzgar/hsslda", build_vignettes = FALSE)
 ```
 
+
+The github page includes an introduction to the package.
 Or if you'd like the introductory vignette seen below included in your Rstudio installation of hsslda, you can use:
 ```{r eval=FALSE}
 remotes::install_github("mamouzgar/hsslda", build_vignettes = TRUE)
@@ -46,7 +52,6 @@ library(hsslda)
 ```
 
 Here we read-in the example data
-
 ```{r, include = FALSE, results = 'hide', echo= FALSE}
 # load("/Users/mamouzgar/phd-projects/Rpackage/hsslda/data/TcellHartmann2020_sampleData.rda")
 ```
@@ -61,6 +66,8 @@ data(TcellHartmann2020_sampleData)
 colnames(TcellHartmann2020_sampleData)
 head(TcellHartmann2020_sampleData,3)
 ```
+
+## How to run HSS-LDA:
 
 You can run hybrid subset selection on a dataset using runHSS(). 
 
@@ -79,11 +86,12 @@ Here we will run HSS using the default scoring method: euclidean distance.Note t
 channels = c('GLUT1', 'HK2', 'GAPDH', 'LDHA', 'MCT1', 'PFKFB4', 'IDH2', 'CyclinB1', 'GLUD12', 'CS', 'OGDH', 'CytC', 'ATP5A', 'S6_p', 'HIF1A')
 train.x = TcellHartmann2020_sampleData[channels]
 train.y = TcellHartmann2020_sampleData[['labels']]
-hss.result = runHSS(x = train.x, y = train.y, score.method = 'euclidean')
+hss.result = runHSS(x = train.x, y = train.y, score.method = 'euclidean', downsample = FALSE)
 
 ```
 
 
+## Output summary:
 
 The final hss.result object outputted from runHSS contains a few elements, the most important ones are highlighted below:
 
@@ -95,6 +103,7 @@ The final hss.result object outputted from runHSS contains a few elements, the m
 
 4) HSS-LDA-result: The final result table containing all initially inputted markers, class labels, and linear discriminants from the opimal model.
 
+5) downsampled.cells.included.in.analysis: A boolean vector of rows included in the downsampling analysis. If downsampling was not performed, all values are TRUE. The final output results includes all data projected onto the HSS-LD axes.
 
 You can visualize the elbow plot, which is ggplot configurable:
 ```{r}
@@ -155,6 +164,11 @@ hss.resultCustom = runHSS(x = train.x, y = train.y, score.method = 'custom', cus
 
 And that's how you use LDA with Hybrid Subset Selection!
 
+
+Questions, comments, or general feedback:
+
+
+amouzgar@stanford.edu
 
 
 

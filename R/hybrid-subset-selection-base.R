@@ -1,4 +1,6 @@
 ##' Authors: Meelad Amouzgar and David Glass
+##' @author Meelad Amouzgar
+##' @author David Glass
 ##' date: July 5th, 2021
 ##' Description: defines several functions required for hybrid subset selection:
 ##' 1. hsslda: the hybrid subset selection (HSS)
@@ -9,6 +11,10 @@
 ##' 3c. Pixel entropy
 ##' 3d. Pixel density
 ##'
+##'
+##'
+##'
+
 
 
 #' @importFrom ggplot2 ggplot
@@ -39,6 +45,8 @@
 #' @importFrom stats dist
 #' @importFrom TFBSTools shannon.entropy
 #' @importFrom cluster silhouette
+#'
+
 
 
 
@@ -702,7 +710,7 @@ runHSS <- function(x, y, score.method, custom.score.method = NULL, downsample = 
     x = downsampledCells[colnames(x)]
   } else {
     message("Using all input cells for HSS-LDA...")
-    cells.included.in.downsampling.analysis = TRUE
+    cells.included.in.downsampling.analysis = rep(TRUE, nrow(orig.data))
   }
 
   message("Optimizing dimensionality reduction using ", score.method, " metric...")
