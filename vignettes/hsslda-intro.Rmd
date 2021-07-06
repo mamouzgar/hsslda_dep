@@ -19,7 +19,7 @@ Install and load the hsslda library:
 You can install hsslda using:
 
 ```{r eval=FALSE}
-remotes::install_github("mamouzgar/hsslda")
+remotes::install_github("mamouzgar/hsslda", build_vignettes = TRUE)
 ```
 
 
