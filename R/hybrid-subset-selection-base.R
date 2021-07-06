@@ -11,7 +11,7 @@
 ##'
 
 
-#' @description: plotElbow: This function generates an Elbow plot of the scores for each # of features
+#' @description plotElbow: This function generates an Elbow plot of the scores for each # of features
 #' @param results: the final results table from computing all HSS combinations
 #' @param elbow: elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
 #' @noRd
@@ -66,7 +66,8 @@ plotElbow <- function(results, elbow = NULL){
 # }
 
 
-#' @description: create_pixel_grid: This function generates a pixel grid template, defaults to 10,000 pixels
+#' @title create_pixel_grid
+#' @description create_pixel_grid: This function generates a pixel grid template, defaults to 10,000 pixels
 #' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
 #' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
 #' @keywords internal
@@ -123,7 +124,9 @@ generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, y
 #   pce.score["pixel"] = rownames(pce.score)
 #   return(pce.score)
 # }
-#' @description: calculate_pceScore: This function computes the pixel class entropy score.
+
+#' @title calculate_pceScore
+#' @description calculate_pceScore: This function computes the pixel class entropy score.
 #' @param density_metric_output: the output from the function, density_metric_output
 #' @noRd
 calculate_pceScore <- function(data = density_metric_output) {
@@ -141,9 +144,10 @@ calculate_pceScore <- function(data = density_metric_output) {
   return(pce.score)
 }
 
-
-#' @description: computePCEscore: computes the pixel class entropy score for any biaxial dataset with class labels
+#' @title computePCEscore
+#' @description computePCEscore: computes the pixel class entropy score for any biaxial dataset with class labels
 #' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+#' @export
 computePCEscore <- function(data) {
   ## data in format of x(axis1), y(axis2), class label of interest
 
@@ -193,7 +197,7 @@ computePCEscore <- function(data) {
 ########################
 ## EUCLIDEAN DISTANCE ##
 ########################
-#' @description: getScore_euclidean: An aggregate function to compute LDA and euclidean distance score for HSS.
+#' @description getScore_euclidean: An aggregate function to compute LDA and euclidean distance score for HSS.
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
@@ -208,13 +212,12 @@ getScore_euclidean <- function(x, y, cols) {
 #######################
 ## SILHOUETTE SCORE  ##
 #######################
-#' @description: getScore_silhouette: An aggregate function to compute LDA and silouette score for HSS.
+#' @description getScore_silhouette: An aggregate function to compute LDA and silouette score for HSS.
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
 #' @noRd
 #' @keywords internal
-#' @export
 getScore_silhouette  <- function(x, y, cols) {
   df = x[, cols]
   lda.out <- MASS::lda(y~., data=df)
@@ -232,13 +235,12 @@ getScore_silhouette  <- function(x, y, cols) {
 ##########################################
 ## PIXEL CLONALITY ENTROPY (PCE) SCORE  ##
 ##########################################
-#' @description: getScore_pce: An aggregate function to compute LDA and the PCE score for HSS.
+#' @description getScore_pce: An aggregate function to compute LDA and the PCE score for HSS.
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
 #' @noRd
 #' @keywords internal
-#' @export
 getScore_pce <- function(x, y, cols) {
   ## pixel clonality scoring method
   lda.out <- MASS::lda(y~., data=x[, cols])
@@ -280,7 +282,7 @@ getScore_pce <- function(x, y, cols) {
 ###############################
 ## CUSTOM TEMPLATE FUNCTION  ##
 ###############################
-#' @description: getScore_custom: placeholder for a custom metric
+#' @description getScore_custom: placeholder for a custom metric
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
@@ -295,7 +297,7 @@ getScore_custom <- function(x, y, cols, custom.score.method, ...) {
 #####################################
 ## aggregate function for getScore ##
 #####################################
-#' @description: getScore: wrapper function for each getScore metric
+#' @description getScore: wrapper function for each getScore metric
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
@@ -334,7 +336,7 @@ getScore <- function(x , y, cols, score.method) {
   }
 }
 
-#' @description: hybridSubsetSelection: function that performs hybrid stepwise subset selection
+#' @description hybridSubsetSelection: function that performs hybrid stepwise subset selection
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param score.method: the scoring method to use.
@@ -590,7 +592,8 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     return(hss.results)
   }
 
-#' @description: makeAxes: function that generates new LDA axes given an LDA model coefficients
+#' @title makeAxes
+#' @description makeAxes: function that generates new LDA axes given an LDA model coefficients
 #' @param df: a dataframe of cells (rows) by markers/genes (columns)
 #' @param co: the dataframe of LDA coefficients from MASS::lda.
 #' @keywords internal
@@ -609,7 +612,8 @@ makeAxes <- function(df=dat, co=coefficients, axis.name="ld") {
 }
 
 
-#' This function runs hybrid subset selection.
+#' @title runHSS
+#' @description This function runs hybrid subset selection.
 #' @param x: table with predictors of interest
 #' @param y: vector of class labels
 #' @param score.method: scoring metric to use to perform HSS
