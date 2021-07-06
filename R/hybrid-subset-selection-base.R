@@ -11,6 +11,14 @@
 ##'
 
 
+#' @importFrom ggplot2 ggplot
+#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 geom_line
+#' @importFrom ggplot2 geom_point
+
+
+
+
 #' @description plotElbow: This function generates an Elbow plot of the scores for each # of features
 #' @param results: the final results table from computing all HSS combinations
 #' @param elbow: elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
