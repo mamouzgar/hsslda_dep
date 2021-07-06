@@ -15,6 +15,23 @@
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 geom_line
 #' @importFrom ggplot2 geom_point
+#'
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr group_by
+#' @importFrom dplyr ungroup
+#' @importFrom dplyr rename
+#' @importFrom dplyr summarize
+#' @importFrom dplyr mutate
+#' @importFrom dplyr spread
+#' @importFrom dplyr rowwise
+#' @importFrom tidyr gather
+#'
+#' @importFrom MASS lda
+#' @importFrom stats dist
+#' @importFrom TFBSTools shannon.entropy
+#' @importFrom cluster silhouette
+
 
 
 
@@ -187,7 +204,7 @@ computePCEscore <- function(data) {
 #'     dplyr::summarize(count = sum(count.0),
 #'               percent = sum(percent.0)) %>%
 #'     tidyr::gather(key = "approach", value = "quantity", -pixel,-x,-y,-binary.labels) %>%
-#'     dplyr::spread(key = "binary.labels", value = "quantity") %>%
+#'     tidyr::spread(key = "binary.labels", value = "quantity") %>%
 #'     dplyr::rowwise() %>%
 #'     dplyr::mutate(class.of.interest = ifelse(is.na(class.of.interest), 0, class.of.interest),
 #'            other = ifelse(is.na(other), 0, other),
@@ -212,7 +229,7 @@ computePCEscore <- function(data) {
 #' @noRd
 getScore_euclidean <- function(x, y, cols) {
   # performs LDA using columns provided and returns lowest euclidean distance between pop means
-  lda.out <- MASS::lda(y~., data=x[, cols])
+  lda.out <- lda(y~., data=x[, cols])
   # print(min(dist(lda.out$means %*% lda.out$scaling[,1:2])))
   return(min(dist(lda.out$means %*% lda.out$scaling[,1:2])))
 }
@@ -228,10 +245,10 @@ getScore_euclidean <- function(x, y, cols) {
 #' @keywords internal
 getScore_silhouette  <- function(x, y, cols) {
   df = x[, cols]
-  lda.out <- MASS::lda(y~., data=df)
+  lda.out <- lda(y~., data=df)
 
   dist.matrix = df %>% dist() %>% as.matrix()
-  silhoutte.output = cluster::silhouette(x = as.numeric(factor(y)), dmatrix = dist.matrix, do.clus.stat = TRUE, do.n.k=TRUE )
+  silhoutte.output = silhouette(x = as.numeric(factor(y)), dmatrix = dist.matrix, do.clus.stat = TRUE, do.n.k=TRUE )
 
   silh.result.all = df %>% cbind(., data.frame(cluster = silhoutte.output[,1], neighbor = silhoutte.output[,2], sil_width = silhoutte.output[,3] ))
   sum.sil = summary(silhoutte.output)
@@ -251,7 +268,7 @@ getScore_silhouette  <- function(x, y, cols) {
 #' @keywords internal
 getScore_pce <- function(x, y, cols) {
   ## pixel clonality scoring method
-  lda.out <- MASS::lda(y~., data=x[, cols])
+  lda.out <- lda(y~., data=x[, cols])
 
   if (!exists("pixel.grid")){
     pixel.grid <- create_pixel_grid()
@@ -270,7 +287,7 @@ getScore_pce <- function(x, y, cols) {
 # getScore_pixelDensity <- function(x, y, cols) {
 #   ## pixel clonality scoring method
 #   # performs LDA using columns provided and returns lowest euclidean distance between pop means
-#   lda.out <- MASS::lda(y~., data=x[, cols])
+#   lda.out <- lda(y~., data=x[, cols])
 #
 #   if (!exists("pixel.grid")){
 #     pixel.grid <- create_pixel_grid()
@@ -587,7 +604,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       names(.)
     print(markers)
     print("testing")
-    lda.out <- MASS::lda(y~., data=x[, markers])
+    lda.out <- lda(y~., data=x[, markers])
 
 
     ## save lda.out results
