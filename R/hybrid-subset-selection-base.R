@@ -34,6 +34,7 @@
 #' @importFrom dplyr left_join
 #' @importFrom dplyr right_join
 #' @importFrom dplyr full_join
+#' @importFrom dplyr case_when
 #'
 #' @importFrom MASS lda
 #' @importFrom stats dist
