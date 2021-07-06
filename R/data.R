@@ -12,8 +12,4 @@
 #' @source \url{https://pubmed.ncbi.nlm.nih.gov/32868913/}
 #' 
 #' @format A data frame of 6000 rows and 16 columns.
-#' \describe{
-#'   \item{Col1}{description of Col1}
-#'   \item{Col2}{description of Col2}
-#' }
 "TcellHartmann2020_sampleData"

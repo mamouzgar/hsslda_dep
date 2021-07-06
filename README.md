@@ -195,7 +195,7 @@ You can visualize the elbow plot, which is ggplot configurable:
 hss.result$ElbowPlot
 ```
 
-![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/RtmpTUJcFS/preview-5ff67ccb117c.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/RtmpeTiudj/preview-669969b2ba1d.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 The final output object contains a merged dataframe of your markers,
 class labels, and newly generated LD axes
@@ -218,7 +218,13 @@ head(lda.df, 3)
     ## 2 0.08144526 -1.4912720 -1.858684 4.190646 4.693052 -2.52678835   day0
     ## 3 0.09690983 -1.0026704 -2.758428 2.453262 3.370301  0.09091075   day0
 
-![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/RtmpTUJcFS/preview-5ff67ccb117c.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-12-1.png)
+``` r
+ggplot2::ggplot(lda.df,ggplot2::aes(x = LD1, y = LD2, color = labels)) +
+  ggplot2::geom_point() +
+  myColScale
+```
+
+![](/private/var/folders/_p/dzrkxwzd30l1jx40q6_p26gj_sqz2b/T/RtmpeTiudj/preview-669969b2ba1d.dir/hsslda-intro-md_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
 The final HSS-LDA model is also saved, and can be used like any R model.
 
@@ -281,9 +287,11 @@ function. The custom function must take in as input:
 
 2.  y: vector of class labels matching training data rows.
 
-3.  score.method:‘custom’
+3.  custom.score.method: the function for your custom separation metric.
 
-4.  custom.score.method: the function for your custom separation metric.
+You can then input your custom function into the hsslda::runHSS()
+function as an argument into custom.score.method, and indicate
+score.method = ‘custom’
 
 ``` r
 hss.resultCustom = runHSS(x = train.x, y = train.y, score.method = 'custom', custom.score.method = myCustomFunction)
