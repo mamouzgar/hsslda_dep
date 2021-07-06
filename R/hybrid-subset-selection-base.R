@@ -1,13 +1,13 @@
 ##' Authors: Meelad Amouzgar and David Glass
 ##' date: July 5th, 2021
 ##' Description: defines several functions required for hybrid subset selection:
-##' 1) hsslda: the hybrid subset selection (HSS)
-##' 2) downsampleBalance: downsampling function for faster HSS using the separation metric of choice with balanced downsampling of input class labels
-##' 3) various separation metric functions:
-##' 3a) Euclidean
-##' 3b) Silhouette score
-##' 3c) Pixel entropy
-##' 3d) Pixel density
+##' 1. hsslda: the hybrid subset selection (HSS)
+##' 2.downsampleBalance: downsampling function for faster HSS using the separation metric of choice with balanced downsampling of input class labels
+##' 3. various separation metric functions:
+##' 3a. Euclidean
+##' 3b. Silhouette score
+##' 3c. Pixel entropy
+##' 3d. Pixel density
 ##'
 
 
@@ -35,7 +35,7 @@
 
 
 
-
+#' @title plotElbow
 #' @description plotElbow: This function generates an Elbow plot of the scores for each # of features
 #' @param results: the final results table from computing all HSS combinations
 #' @param elbow: elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
@@ -107,7 +107,7 @@ create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
 }
 
 #' @description: generate_density_map: This function computes the proportion (density) of the class labels in each pixel of the pixel grid generated using create_pixel_grid.
-#' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+#' @param data: a dataframe with 3 columns: x-axis coordinates (labeled x), y-axis coordinates(labeled y), and the class labels (labeled as labels)
 #' @param pixel.grid: the output from the create_pixel_grid function.
 #' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
 #' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
@@ -152,7 +152,7 @@ generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, y
 
 #' @title calculate_pceScore
 #' @description calculate_pceScore: This function computes the pixel class entropy score.
-#' @param density_metric_output: the output from the function, density_metric_output
+#' @param density_metric_output the output from the function, density_metric_output
 #' @noRd
 calculate_pceScore <- function(data = density_metric_output) {
   data <- na.omit(data) %>% ungroup()
@@ -171,7 +171,7 @@ calculate_pceScore <- function(data = density_metric_output) {
 
 #' @title computePCEscore
 #' @description computePCEscore: computes the pixel class entropy score for any biaxial dataset with class labels
-#' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+#' @param data a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
 #' @export
 computePCEscore <- function(data) {
   ## data in format of x(axis1), y(axis2), class label of interest
@@ -189,8 +189,8 @@ computePCEscore <- function(data) {
 ##########################
 ## PIXEL DENSITY SCORE  ##
 ##########################
-#' #' @description: calculate_pixelDensityScore: computes the pixel density score for any biaxial dataset with class labels. Must finish recoding. FYI see lapply commented out for reminder on what needs to change
-#' #' @param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+#' #' description: calculate_pixelDensityScore: computes the pixel density score for any biaxial dataset with class labels. Must finish recoding. FYI see lapply commented out for reminder on what needs to change
+#' #' param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
 #' calculate_pixelDensityScore <- function(data = density_metric_output) {
 #'
 #'   data <- na.omit(data) %>% ungroup()
@@ -608,6 +608,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
 
 
     ## save lda.out results
+    hss.results[["method"]] = score.method
     hss.results[["HSSscores"]] = results
     hss.results[["ElbowPlot"]] = plotElbow(results = results, elbow = elbow)
     hss.results[["HSS-LDA-model"]] = lda.out
@@ -664,7 +665,7 @@ runHSS <- function(x, y, score.method, custom.score.method = NULL){
 # library(dplyr)
 # library(magrittr)
 # library(ggplot2)
-# path  <- "sc-lda/data/analysis-ready/metabolism-CD8-naive-data_cell-allmarkers.csv"
+# path  <- "~/phd-projects/sc-lda/data/analysis-ready/metabolism-CD8-naive-data_cell-allmarkers.csv"
 # channels <- c('GLUT1', 'HK2', 'GAPDH', 'LDHA', 'MCT1', 'PFKFB4', 'IDH2', 'CyclinB1',
 #               'GLUD12', 'CS', 'OGDH', 'CytC', 'ATP5A', 'S6_p', 'HIF1A', 'PDK1_p', 'NRF1',
 #               'NRF2_p', 'XBP1', 'VDAC1', 'OPA1', 'DRP1', 'ASCT2', 'GLS', 'GOT2', 'CPT1A',
@@ -694,8 +695,9 @@ runHSS <- function(x, y, score.method, custom.score.method = NULL){
 # start.time = Sys.time()
 # # hss.results=runHSS(x = train.x, y = train.y, score.method = "euclidean")
 # # hss.results=runHSS(x = train.x, y = train.y, score.method = "silhouette")
+# hss.results=runHSS(x = train.x, y = train.y, score.method = "pixel.entropy")
 # end.time = Sys.time()
-# # coefficients <- hybridSubsetSelection(x=train.x, y=train.y, score.method = "pixel.entropy")
+# coefficients <- hybridSubsetSelection(x=train.x, y=train.y, score.method = "pixel.entropy")
 # #
 # end.time-start.time
 #

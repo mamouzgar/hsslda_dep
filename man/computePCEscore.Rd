@@ -7,7 +7,7 @@
 computePCEscore(data)
 }
 \arguments{
-\item{data:}{a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)}
+\item{data}{a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)}
 }
 \description{
 computePCEscore: computes the pixel class entropy score for any biaxial dataset with class labels
