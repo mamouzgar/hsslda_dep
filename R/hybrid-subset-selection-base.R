@@ -14,6 +14,7 @@
 #' @description: plotElbow: This function generates an Elbow plot of the scores for each # of features
 #' @param results: the final results table from computing all HSS combinations
 #' @param elbow: elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
+#' @noRd
 plotElbow <- function(results, elbow = NULL){
   dfElbow =split(results, results$no.markers)  %>% lapply(., function(x) { x[which.max(x$score),]})  %>% base::do.call(base::rbind, .)
 
@@ -68,6 +69,8 @@ plotElbow <- function(results, elbow = NULL){
 #' @description: create_pixel_grid: This function generates a pixel grid template, defaults to 10,000 pixels
 #' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
 #' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
+#' @keywords internal
+#' @export
 create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
   xbreaks <-xbreaks
   ybreaks <-ybreaks
@@ -82,6 +85,7 @@ create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
 #' @param pixel.grid: the output from the create_pixel_grid function.
 #' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
 #' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
+#' @noRd
 generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, ybreaks = 100) {
 
   # data_pixel_counts <- lapply(unique(data$labels), function(class.label) {
@@ -121,6 +125,7 @@ generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, y
 # }
 #' @description: calculate_pceScore: This function computes the pixel class entropy score.
 #' @param density_metric_output: the output from the function, density_metric_output
+#' @noRd
 calculate_pceScore <- function(data = density_metric_output) {
   data <- na.omit(data) %>% ungroup()
   pce.score <- data %>%
@@ -192,6 +197,7 @@ computePCEscore <- function(data) {
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
+#' @noRd
 getScore_euclidean <- function(x, y, cols) {
   # performs LDA using columns provided and returns lowest euclidean distance between pop means
   lda.out <- MASS::lda(y~., data=x[, cols])
@@ -206,6 +212,9 @@ getScore_euclidean <- function(x, y, cols) {
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
+#' @noRd
+#' @keywords internal
+#' @export
 getScore_silhouette  <- function(x, y, cols) {
   df = x[, cols]
   lda.out <- MASS::lda(y~., data=df)
@@ -227,6 +236,9 @@ getScore_silhouette  <- function(x, y, cols) {
 #' @param x: dataframe of training data
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
+#' @noRd
+#' @keywords internal
+#' @export
 getScore_pce <- function(x, y, cols) {
   ## pixel clonality scoring method
   lda.out <- MASS::lda(y~., data=x[, cols])
@@ -244,26 +256,26 @@ getScore_pce <- function(x, y, cols) {
   return(pce.score)
 }
 
-
-getScore_pixelDensity <- function(x, y, cols) {
-  ## pixel clonality scoring method
-  # performs LDA using columns provided and returns lowest euclidean distance between pop means
-  lda.out <- MASS::lda(y~., data=x[, cols])
-
-  if (!exists("pixel.grid")){
-    pixel.grid <- create_pixel_grid()
-  }
-  data.pixels <- as.matrix(x[, cols]) %*% lda.out$scaling
-  data.pixels <- data.pixels[ , c("LD1","LD2" )]%>% data.frame()
-  data.pixels["labels"] <- y
-  colnames(data.pixels) <- c("x","y","labels")
-
-  density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
-  pixelDensity_output <- calculate_pixelDensityScore(data = density_metric_output)
-  pixelDensity.score <-  mean(pixelDensity_output$density.summary.normalized)
-  # print(pixelDensity.score)
-  return(pixelDensity.score)
-}
+#' @noRd
+# getScore_pixelDensity <- function(x, y, cols) {
+#   ## pixel clonality scoring method
+#   # performs LDA using columns provided and returns lowest euclidean distance between pop means
+#   lda.out <- MASS::lda(y~., data=x[, cols])
+#
+#   if (!exists("pixel.grid")){
+#     pixel.grid <- create_pixel_grid()
+#   }
+#   data.pixels <- as.matrix(x[, cols]) %*% lda.out$scaling
+#   data.pixels <- data.pixels[ , c("LD1","LD2" )]%>% data.frame()
+#   data.pixels["labels"] <- y
+#   colnames(data.pixels) <- c("x","y","labels")
+#
+#   density_metric_output <- generate_density_map(data = data.pixels, pixel.grid = pixel.grid)
+#   pixelDensity_output <- calculate_pixelDensityScore(data = density_metric_output)
+#   pixelDensity.score <-  mean(pixelDensity_output$density.summary.normalized)
+#   # print(pixelDensity.score)
+#   return(pixelDensity.score)
+# }
 
 ###############################
 ## CUSTOM TEMPLATE FUNCTION  ##
@@ -288,6 +300,7 @@ getScore_custom <- function(x, y, cols, custom.score.method, ...) {
 #' @param y: vector of class labels matching training data rows
 #' @param cols: vector of column names
 #' @param score.method: the scoring method to use.
+#' @noRd
 getScore <- function(x , y, cols, score.method) {
   if (length(cols) > 1) {
     if (score.method == "euclidean") {
@@ -326,6 +339,7 @@ getScore <- function(x , y, cols, score.method) {
 #' @param y: vector of class labels matching training data rows
 #' @param score.method: the scoring method to use.
 #' @param custom.score.method: optional input, a custome scoring function (see getScore_custom)
+#' @noRd
 hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NULL) {
   options(dplyr.summarise.inform = FALSE)
 
@@ -576,10 +590,11 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
     return(hss.results)
   }
 
-
-
-
-
+#' @description: makeAxes: function that generates new LDA axes given an LDA model coefficients
+#' @param df: a dataframe of cells (rows) by markers/genes (columns)
+#' @param co: the dataframe of LDA coefficients from MASS::lda.
+#' @keywords internal
+#' @export
 makeAxes <- function(df=dat, co=coefficients, axis.name="ld") {
   # makes new axes based on coefficients
   # Inputs:
@@ -599,6 +614,8 @@ makeAxes <- function(df=dat, co=coefficients, axis.name="ld") {
 #' @param y: vector of class labels
 #' @param score.method: scoring metric to use to perform HSS
 #' @param custom.score.method: function for your custom scoring metric.
+#' @keywords internal
+#' @export
 runHSS <- function(x, y, score.method, custom.score.method = NULL){
   if (!score.method %in% c("euclidean","silhouette", "pixel.density","pixel.entropy")){
     stop("score.method method must be: 'euclidean', 'silhouette', 'pixel.density', 'pixel.entropy', or 'custom'.")
