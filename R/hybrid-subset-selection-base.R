@@ -136,7 +136,7 @@ generate_density_map <- function(data, pixel.grid = pixel.grid, xbreaks = 100, y
            yout = as.numeric(ybin),
            pixel = paste(xout,yout,sep=".")) %>%
     group_by(pixel,labels) %>%
-    dplyr::summarize(count = n())  %>%
+    summarize(count = n())  %>%
     ungroup() %>%
     right_join(.,pixel.grid,by="pixel") %>%
     mutate(count.0 = ifelse(is.na(count), 0, count)) %>%
@@ -166,7 +166,7 @@ calculate_pceScore <- function(data = density_metric_output) {
   data <- na.omit(data) %>% ungroup()
   pce.score <- data %>%
     group_by(x,y,pixel) %>%
-    dplyr::summarize(entropy = shannon.entropy(count),
+    summarize(entropy = shannon.entropy(count),
               num.of.labels = n()) %>%
     ungroup() %>%
     mutate(pce.score = 1-(entropy/log2(num.of.labels)),
