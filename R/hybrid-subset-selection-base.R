@@ -23,7 +23,7 @@
 #' @importFrom dplyr rename
 #' @importFrom dplyr summarize
 #' @importFrom dplyr mutate
-#' @importFrom dplyr spread
+#' @importFrom tidyr spread
 #' @importFrom dplyr rowwise
 #' @importFrom tidyr gather
 #'
@@ -158,7 +158,7 @@ calculate_pceScore <- function(data = density_metric_output) {
   data <- na.omit(data) %>% ungroup()
   pce.score <- data %>%
     group_by(x,y,pixel) %>%
-    summarize(entropy = TFBSTools::shannon.entropy(count),
+    summarize(entropy = shannon.entropy(count),
               num.of.labels = n()) %>%
     ungroup() %>%
     mutate(pce.score = 1-(entropy/log2(num.of.labels)),
