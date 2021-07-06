@@ -1,14 +1,16 @@
 Package: hsslda
-Title: What the Package Does (One Line, Title Case)
+Title: Performs LDA with Hybrid Subset Selection.
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Meelad",
+           family = "Amouzgar",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "amouzgar@stanford.edu",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+Description: This package performs Linear Discriminant Analysis (LDA) with Hybrid Subset Selection (HSS). HSS is a feature selection implementation built on top of LDA that optimizes separation of class labels for improved visualization and dimensionality reduction.
+License: GPL-3.0 License
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr

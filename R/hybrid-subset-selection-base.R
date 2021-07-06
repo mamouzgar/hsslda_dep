@@ -47,7 +47,7 @@
 #' @param elbow elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
 #' @noRd
 plotElbow <- function(results, elbow = NULL){
-  dfElbow =split(results, results$no.markers)  %>% lapply(., function(x) { x[which.max(x$score),]})  %>% base::do.call(base::rbind, .)
+  dfElbow =split(results, results$no.markers)  %>% lapply(., function(x) { x[which.max(x$score),]})  %>% do.call(rbind, .)
 
   if (is.null(elbow)) {
     p.Elbow = ggplot2::ggplot(dfElbow, ggplot2::aes(x=no.markers, y = score)) +
@@ -499,16 +499,16 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
         # print("LOL")
         temp.keep <- c(keep, channel)
         temp.score <- getScore(x, y, cols = temp.keep, score.method)
-        temp.results <- base::rbind(temp.results, as.list(channels %in% temp.keep) %>% base::append(temp.score))
+        temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
         # print(temp.results)
         # temp.results <<-temp.results
       }
       colnames(temp.results) = colnames(results)
-      current.score <<- base::max(temp.results$score)
+      current.score <<- max(temp.results$score)
       new.keep <- temp.results[temp.results$score == current.score, channels]
       if (nrow(new.keep) > 1) new.keep <- new.keep[sample(.N,1)]
       keep <<- channels[as.logical(new.keep)]
-      results <<- base::unique(base::rbind(results, temp.results))
+      results <<- unique(rbind(results, temp.results))
     }
 
     subtractOne <- function() {
@@ -526,7 +526,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       for (channel in keep) {
         temp.keep <- keep[!keep %in% channel]
         temp.score <- getScore(x, y, cols = temp.keep, score.method)
-        temp.results <- base::rbind(temp.results, as.list(channels %in% temp.keep) %>% base::append(temp.score))
+        temp.results <- rbind(temp.results, as.list(channels %in% temp.keep) %>% append(temp.score))
       }
       # print(colnames(temp.results))
       # print( colnames(results))
@@ -536,13 +536,13 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
 
       if (max(temp.results$score) > current.score) {
         # current.score <<- base::max(temp.results$score)
-        current.score <- base::max(temp.results$score)
+        current.score <- max(temp.results$score)
         new.keep <- temp.results[temp.results$score == current.score, channels]
         if (nrow(new.keep) > 1) new.keep <- new.keep[1, ]
         keep <<- channels[as.logical(new.keep)]
-        results <<- base::unique(base::rbind(results, temp.results))
+        results <<- unique(rbind(results, temp.results))
         subtractOne()
-      } else results <<- base::unique(base::rbind(results, temp.results))
+      } else results <<- unique(rbind(results, temp.results))
     }
 
 
@@ -553,31 +553,31 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       # chooses the best scoring pair of markers to initialize keep
       temp.results <- results[0,]
 
-      myChannels = base::expand.grid(channel.1 = channels, channel.2 = channels) %>% .[.$channel.1 != .$channel.2, ]
+      myChannels = expand.grid(channel.1 = channels, channel.2 = channels) %>% .[.$channel.1 != .$channel.2, ]
       # print(myChannels)
       temp.results = apply(myChannels, 1, function(row.temp.keep){
         temp.keep = row.temp.keep %>% unlist()
         temp.score = getScore(x, y, cols = temp.keep, score.method)
-        temp.result = as.list(channels %in% temp.keep) %>% base::append(temp.score)
+        temp.result = as.list(channels %in% temp.keep) %>% append(temp.score)
         return(temp.result)
       })
       # temp.results <<- temp.results
       temp.results <- do.call("rbind", lapply(temp.results, unlist)) %>% data.frame()
       colnames(temp.results) = colnames(results)
 
-      current.score <<- base::max(temp.results$score)
+      current.score <<- max(temp.results$score)
       print(current.score)
       new.keep <- temp.results[temp.results$score==current.score, channels]
       old.keep <<- new.keep
       if (nrow(new.keep) > 1)  new.keep <- new.keep[ which.max(apply(new.keep, 1, sum)), ]
       keep <<- channels[as.logical(new.keep)]
-      results <<- base::unique(rbind(results, temp.results))
+      results <<- unique(rbind(results, temp.results))
     }
 
     getElbow <- function(res) {
       # takes results and returns the elbow point
       res.lite <- res[ , "no.markers"] %>% unique() %>% .[-1 ] %>% data.frame(no.markers = .)
-      res.lite[, "V1"] <- lapply(base::split(res, res$no.markers) , function(df) {base::max(df$score)}) %>% unlist(.) %>% .[-1]
+      res.lite[, "V1"] <- lapply(split(res, res$no.markers) , function(df) {max(df$score)}) %>% unlist(.) %>% .[-1]
       res.lite<<-res.lite
       slope <- (res.lite$V1[nrow(res.lite)] - res.lite$V1[1]) / (res.lite$no.markers[nrow(res.lite)] - res.lite$no.markers[1])
       intercept <- res.lite$V1[1] - slope * res.lite$no.markers[1]
@@ -585,8 +585,8 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
       perp.int <- res.lite$V1 - (perp.slope * res.lite$no.markers)
       xcross <- (intercept - perp.int) / (perp.slope - slope)
       ycross <- slope * xcross + intercept
-      dists <-  base::sqrt((res.lite$no.markers - xcross)^2 + (res.lite$V1 - ycross)^2)
-      elbowi <- base::max(which(dists==max(dists))) # if dists are tie, take the largest number of channels
+      dists <-  sqrt((res.lite$no.markers - xcross)^2 + (res.lite$V1 - ycross)^2)
+      elbowi <- max(which(dists==max(dists))) # if dists are tie, take the largest number of channels
       return(elbowi+1)
     }
 

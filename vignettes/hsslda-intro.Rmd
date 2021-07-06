@@ -2,17 +2,33 @@
 title: "hsslda-intro"
 author: "meelad amouzgar"
 date: "7/5/2021"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{hsslda-intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
-# knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
 Install and load the hsslda library:
-```{r}
+
+You can install hsslda using:
+
+```{r eval=FALSE}
 remotes::install_github("mamouzgar/hsslda")
+```
+
+
+
+```{r, warning=FALSE, include=FALSE}
+library(magrittr)
+```
+
+```{r, warning=FALSE, include=TRUE}
 library(hsslda)
 ```
 
@@ -54,12 +70,16 @@ head(lda.df)
 ```
 
 ```{r, echo=FALSE}
+lda.df$labels = train.y
+```
+
+```{r, echo=FALSE}
 ggplot2::ggplot(lda.df,ggplot2::aes(x = LD1, y = LD2, color = labels)) +
   ggplot2::geom_point() +
   viridis::scale_color_viridis(discrete = TRUE, option = "viridis") 
 ```
 
-The final HSS-LDA model is also saved, which you can use to apply the same dimensionality reduction to new data using makeAxes.
+The final HSS-LDA model is also saved
 ```{r, echo=TRUE}
 hss.result$`HSS-LDA-model`
 ```
@@ -68,9 +88,34 @@ hss.result$`HSS-LDA-model`
 newdata = train.x
 ```
 
+You can use this final model to apply the same dimensionality reduction to new data using makeAxes.
 ```{r, echo=TRUE, results = 'hide'}
 lda.df.newData = makeAxes(df = newdata, co =hss.result$`HSS-LDA-model`$scaling)
 ```
+
+
+You can also add your own custom separation metric to perform feature selection with by changing score.method = 'custom' and adding custom function. 
+The custom function must take in as input:
+
+x dataframe of training data
+
+y vector of class labels matching training data rows
+
+cols vector of column names
+
+
+```{r eval=FALSE}
+hss.resultCustom = runHSS(x = train.x, y = train.y, score.method = 'custom', custom.score.method = myCustomFunction)
+```
+
+
+And that's how you use LDA with Hybrid Subset Selection!
+
+
+
+
+
+
 
 
 
