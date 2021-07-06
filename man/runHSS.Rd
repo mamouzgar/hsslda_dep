@@ -7,13 +7,13 @@
 runHSS(x, y, score.method, custom.score.method = NULL)
 }
 \arguments{
-\item{x:}{table with predictors of interest}
+\item{x}{table with predictors of interest}
 
-\item{y:}{vector of class labels}
+\item{y}{vector of class labels}
 
-\item{score.method:}{scoring metric to use to perform HSS}
+\item{score.method}{scoring metric to use to perform HSS}
 
-\item{custom.score.method:}{function for your custom scoring metric.}
+\item{custom.score.method}{function for your custom scoring metric.}
 }
 \description{
 This function runs hybrid subset selection.

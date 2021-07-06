@@ -4,12 +4,12 @@
 \alias{makeAxes}
 \title{makeAxes}
 \usage{
-makeAxes(df = dat, co = coefficients, axis.name = "ld")
+makeAxes(df = dat, co = coefficient)
 }
 \arguments{
-\item{df:}{a dataframe of cells (rows) by markers/genes (columns)}
+\item{df}{a dataframe of cells (rows) by markers/genes (columns)}
 
-\item{co:}{the dataframe of LDA coefficients from MASS::lda.}
+\item{co}{the dataframe of LDA coefficients from MASS::lda.}
 }
 \description{
 makeAxes: function that generates new LDA axes given an LDA model coefficients

@@ -29,7 +29,9 @@
 #   dplyr::select(all_of(channels[1:15]), labels)
 #
 # save(dat, file="data/TcellHartmann2020_sampleData.RData")
-#
+# write.table(dat, "data/TcellHartmann2020_sampleData.txt", sep="\t",row.names = FALSE, col.names = TRUE)
+# save(dat, file="data/TcellHartmann2020_sampleData.RData")
+
 #
 # # fwrite(dat, file = output_path)
 # # training data with appropriate channels

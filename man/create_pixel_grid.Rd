@@ -7,9 +7,9 @@
 create_pixel_grid(xbreaks = 100, ybreaks = 100)
 }
 \arguments{
-\item{xbreaks:}{the # of pixels to break the x-axis into. Defaults to 100.}
+\item{xbreaks}{the # of pixels to break the x-axis into. Defaults to 100.}
 
-\item{ybreaks:}{the # of pixels to break the y-axis into. Defaults to 100.}
+\item{ybreaks}{the # of pixels to break the y-axis into. Defaults to 100.}
 }
 \description{
 create_pixel_grid: This function generates a pixel grid template, defaults to 10,000 pixels

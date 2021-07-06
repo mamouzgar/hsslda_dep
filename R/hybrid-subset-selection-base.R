@@ -43,8 +43,8 @@
 
 #' @title plotElbow
 #' @description plotElbow: This function generates an Elbow plot of the scores for each # of features
-#' @param results: the final results table from computing all HSS combinations
-#' @param elbow: elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
+#' @param results the final results table from computing all HSS combinations
+#' @param elbow elbow value outputted from getElbow during HSS. Use to color the automatically computed elbow point.
 #' @noRd
 plotElbow <- function(results, elbow = NULL){
   dfElbow =split(results, results$no.markers)  %>% lapply(., function(x) { x[which.max(x$score),]})  %>% base::do.call(base::rbind, .)
@@ -99,8 +99,8 @@ plotElbow <- function(results, elbow = NULL){
 
 #' @title create_pixel_grid
 #' @description create_pixel_grid: This function generates a pixel grid template, defaults to 10,000 pixels
-#' @param xbreaks: the # of pixels to break the x-axis into. Defaults to 100.
-#' @param ybreaks: the # of pixels to break the y-axis into. Defaults to 100.
+#' @param xbreaks the # of pixels to break the x-axis into. Defaults to 100.
+#' @param ybreaks the # of pixels to break the y-axis into. Defaults to 100.
 #' @keywords internal
 #' @export
 create_pixel_grid <- function(xbreaks =100, ybreaks = 100) {
@@ -229,9 +229,9 @@ computePCEscore <- function(data) {
 ## EUCLIDEAN DISTANCE ##
 ########################
 #' @description getScore_euclidean: An aggregate function to compute LDA and euclidean distance score for HSS.
-#' @param x: dataframe of training data
-#' @param y: vector of class labels matching training data rows
-#' @param cols: vector of column names
+#' @param x dataframe of training data
+#' @param y vector of class labels matching training data rows
+#' @param cols vector of column names
 #' @noRd
 getScore_euclidean <- function(x, y, cols) {
   # performs LDA using columns provided and returns lowest euclidean distance between pop means
@@ -244,9 +244,9 @@ getScore_euclidean <- function(x, y, cols) {
 ## SILHOUETTE SCORE  ##
 #######################
 #' @description getScore_silhouette: An aggregate function to compute LDA and silouette score for HSS.
-#' @param x: dataframe of training data
-#' @param y: vector of class labels matching training data rows
-#' @param cols: vector of column names
+#' @param x dataframe of training data
+#' @param y vector of class labels matching training data rows
+#' @param cols vector of column names
 #' @noRd
 #' @keywords internal
 getScore_silhouette  <- function(x, y, cols) {
@@ -267,9 +267,9 @@ getScore_silhouette  <- function(x, y, cols) {
 ## PIXEL CLONALITY ENTROPY (PCE) SCORE  ##
 ##########################################
 #' @description getScore_pce: An aggregate function to compute LDA and the PCE score for HSS.
-#' @param x: dataframe of training data
-#' @param y: vector of class labels matching training data rows
-#' @param cols: vector of column names
+#' @param x dataframe of training data
+#' @param y vector of class labels matching training data rows
+#' @param cols vector of column names
 #' @noRd
 #' @keywords internal
 getScore_pce <- function(x, y, cols) {
@@ -312,11 +312,12 @@ getScore_pce <- function(x, y, cols) {
 ###############################
 ## CUSTOM TEMPLATE FUNCTION  ##
 ###############################
+#' @title getScore_custom
 #' @description getScore_custom: placeholder for a custom metric
-#' @param x: dataframe of training data
-#' @param y: vector of class labels matching training data rows
-#' @param cols: vector of column names
-#' @param custom.score.method: a custom-function that takes in x, y, and cols, and outputs a score where the larger the value, the more optimal your separation criteria is.
+#' @param x dataframe of training data
+#' @param y vector of class labels matching training data rows
+#' @param cols vector of column names
+#' @param custom.score.method a custom-function that takes in x, y, and cols, and outputs a score where the larger the value, the more optimal your separation criteria is.
 getScore_custom <- function(x, y, cols, custom.score.method, ...) {
   df = x[, cols, with=F]
   lda.out <- lda(y~., data=df)
@@ -328,10 +329,10 @@ getScore_custom <- function(x, y, cols, custom.score.method, ...) {
 ## aggregate function for getScore ##
 #####################################
 #' @description getScore: wrapper function for each getScore metric
-#' @param x: dataframe of training data
-#' @param y: vector of class labels matching training data rows
-#' @param cols: vector of column names
-#' @param score.method: the scoring method to use.
+#' @param x dataframe of training data
+#' @param y vector of class labels matching training data rows
+#' @param cols vector of column names
+#' @param score.method the scoring method to use.
 #' @noRd
 getScore <- function(x , y, cols, score.method) {
   if (length(cols) > 1) {
@@ -367,10 +368,10 @@ getScore <- function(x , y, cols, score.method) {
 }
 
 #' @description hybridSubsetSelection: function that performs hybrid stepwise subset selection
-#' @param x: dataframe of training data
-#' @param y: vector of class labels matching training data rows
-#' @param score.method: the scoring method to use.
-#' @param custom.score.method: optional input, a custome scoring function (see getScore_custom)
+#' @param x dataframe of training data
+#' @param y vector of class labels matching training data rows
+#' @param score.method the scoring method to use.
+#' @param custom.score.method optional input, a custome scoring function (see getScore_custom)
 #' @noRd
 hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NULL) {
   options(dplyr.summarise.inform = FALSE)
@@ -625,8 +626,8 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
 
 #' @title makeAxes
 #' @description makeAxes: function that generates new LDA axes given an LDA model coefficients
-#' @param df: a dataframe of cells (rows) by markers/genes (columns)
-#' @param co: the dataframe of LDA coefficients from MASS::lda.
+#' @param df a dataframe of cells (rows) by markers/genes (columns)
+#' @param co the dataframe of LDA coefficients from MASS::lda.
 #' @keywords internal
 #' @export
 makeAxes <- function(df=dat, co=coefficient) {
@@ -645,10 +646,10 @@ makeAxes <- function(df=dat, co=coefficient) {
 
 #' @title runHSS
 #' @description This function runs hybrid subset selection.
-#' @param x: table with predictors of interest
-#' @param y: vector of class labels
-#' @param score.method: scoring metric to use to perform HSS
-#' @param custom.score.method: function for your custom scoring metric.
+#' @param x table with predictors of interest
+#' @param y vector of class labels
+#' @param score.method scoring metric to use to perform HSS
+#' @param custom.score.method function for your custom scoring metric.
 #' @keywords internal
 #' @export
 runHSS <- function(x, y, score.method, custom.score.method = NULL){
