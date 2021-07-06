@@ -195,34 +195,34 @@ computePCEscore <- function(data) {
 ##########################
 ## PIXEL DENSITY SCORE  ##
 ##########################
-#' #' description: calculate_pixelDensityScore: computes the pixel density score for any biaxial dataset with class labels. Must finish recoding. FYI see lapply commented out for reminder on what needs to change
-#' #' param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
-#' calculate_pixelDensityScore <- function(data = density_metric_output) {
-#'
-#'   data <- na.omit(data) %>% ungroup()
-#'   # print("calculate-pixel-clonality")
-#'
-#'   pixelDensity.score <- data %>%
-#'     dplyr::ungroup() %>%
-#'     dplyr::mutate(binary.labels = ifelse(labels == class.label, "class.of.interest", "other")) %>%
-#'     dplyr::select(pixel, x, y, percent.0, binary.labels) %>%
-#'     dplyr::group_by(pixel, x, y, binary.labels) %>%
-#'     dplyr::summarize(count = sum(count.0),
-#'               percent = sum(percent.0)) %>%
-#'     tidyr::gather(key = "approach", value = "quantity", -pixel,-x,-y,-binary.labels) %>%
-#'     tidyr::spread(key = "binary.labels", value = "quantity") %>%
-#'     dplyr::rowwise() %>%
-#'     dplyr::mutate(class.of.interest = ifelse(is.na(class.of.interest), 0, class.of.interest),
-#'            other = ifelse(is.na(other), 0, other),
-#'            density.metric = (class.of.interest / (other+class.of.interest)),
-#'            # density.metric = ifelse()
-#'            labels = class.label)  %>%
-#'     # dplyr::select(pixel,x,y, approach, class.of.interest, other,density.metric, labels) %>%
-#'     dplyr:: group_by(approach, labels) %>%
-#'     dplyr::summarize(density.summary = sum(density.metric)) %>%
-#'     dplyr::mutate(density.summary.normalized = density.summary / 10000)
-#'   return(pixelDensity.score)
-#' }
+# description: calculate_pixelDensityScore: computes the pixel density score for any biaxial dataset with class labels. Must finish recoding. FYI see lapply commented out for reminder on what needs to change
+# param data: a dataframe with 3 columns: x-axis coordinates (labeled `x`), y-axis coordinates(labeled `y`), and the class labels (labeled as `labels`)
+# calculate_pixelDensityScore <- function(data = density_metric_output) {
+#
+#   data <- na.omit(data) %>% ungroup()
+#   # print("calculate-pixel-clonality")
+#
+#   pixelDensity.score <- data %>%
+#     dplyr::ungroup() %>%
+#     dplyr::mutate(binary.labels = ifelse(labels == class.label, "class.of.interest", "other")) %>%
+#     dplyr::select(pixel, x, y, percent.0, binary.labels) %>%
+#     dplyr::group_by(pixel, x, y, binary.labels) %>%
+#     dplyr::summarize(count = sum(count.0),
+#               percent = sum(percent.0)) %>%
+#     tidyr::gather(key = "approach", value = "quantity", -pixel,-x,-y,-binary.labels) %>%
+#     tidyr::spread(key = "binary.labels", value = "quantity") %>%
+#     dplyr::rowwise() %>%
+#     dplyr::mutate(class.of.interest = ifelse(is.na(class.of.interest), 0, class.of.interest),
+#            other = ifelse(is.na(other), 0, other),
+#            density.metric = (class.of.interest / (other+class.of.interest)),
+#            # density.metric = ifelse()
+#            labels = class.label)  %>%
+#     # dplyr::select(pixel,x,y, approach, class.of.interest, other,density.metric, labels) %>%
+#     dplyr:: group_by(approach, labels) %>%
+#     dplyr::summarize(density.summary = sum(density.metric)) %>%
+#     dplyr::mutate(density.summary.normalized = density.summary / 10000)
+#   return(pixelDensity.score)
+# }
 
 
 ########################
@@ -289,7 +289,6 @@ getScore_pce <- function(x, y, cols) {
   return(pce.score)
 }
 
-#' @noRd
 # getScore_pixelDensity <- function(x, y, cols) {
 #   ## pixel clonality scoring method
 #   # performs LDA using columns provided and returns lowest euclidean distance between pop means
@@ -630,7 +629,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
 #' @param co: the dataframe of LDA coefficients from MASS::lda.
 #' @keywords internal
 #' @export
-makeAxes <- function(df=dat, co=coefficients, axis.name="ld") {
+makeAxes <- function(df=dat, co=coefficient) {
   # makes new axes based on coefficients
   # Inputs:
   #   df - data.frame of data
@@ -662,6 +661,7 @@ runHSS <- function(x, y, score.method, custom.score.method = NULL){
   hss.results <<-hss.results
   coefficients = hss.results[["HSS-LDA-model"]]$scaling
   dat <- makeAxes(df=x, co=coefficients)
+  dat[["labels"]] = y
   hss.results[["HSS-LDA-result"]] = dat
   return(hss.results)
 }
