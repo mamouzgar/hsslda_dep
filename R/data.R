@@ -7,8 +7,8 @@
 #'
 #' @usage data(TcellHartmann2020_sampleData)
 #'
-#' @format An object of class \code{"list"}}.
-#'
+#' @format A data frame of 6000 rows and 16 columns.
+#''
 #' @keywords datasets
 #'
 #' @references Hartmann et al. (2021) Nat Biotechnol 39, 186–197
