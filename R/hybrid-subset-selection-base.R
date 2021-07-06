@@ -681,6 +681,12 @@ runHSS <- function(x, y, score.method, custom.score.method = NULL){
 
 
 
+# remotes::install_github("mamouzgar/hsslda")
+
+
+
+
+
 
 
 # dat <- makeAxes()
