@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/788522/1c6a15ae79464a198a7fc09ca791b4f1
+bundleId: https://api.rpubs.com/api/v1/document/788522/1c6a15ae79464a198a7fc09ca791b4f1
+url: http://rpubs.com/mamouzgar/788522
+when: 1625595258.94612

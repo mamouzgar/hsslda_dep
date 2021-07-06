@@ -29,21 +29,25 @@ remotes::install_github("mamouzgar/hsslda", build_vignettes = TRUE)
 library(magrittr)
 ```
 
-```{r, warning=FALSE, include=FALSE}
+```{r, warning=FALSE, include=TRUE, results = 'hide', message = FALSE}
 library(hsslda)
 ```
 
 Here we read-in the example data
-```{r, results = 'hide'}
-Tcell_intro = read.csv("data/TcellHartmann2020_sampleData.txt",sep="\t", stringsAsFactors = T)
-# Tcell_intro = data(TcellHartmann2020_sampleData)
+
+```{r, include = FALSE, results = 'hide', echo= FALSE}
+# load("/Users/mamouzgar/phd-projects/Rpackage/hsslda/data/TcellHartmann2020_sampleData.rda")
+```
+
+```{r,  eval=FALSE}
+data(TcellHartmann2020_sampleData)
 
 ```
 
 
 ```{r}
-colnames(Tcell_intro)
-head(Tcell_intro,3)
+colnames(TcellHartmann2020_sampleData)
+head(TcellHartmann2020_sampleData,3)
 ```
 
 You can run hybrid subset selection on a dataset using runHSS(). 
@@ -60,8 +64,8 @@ runHSS takes 3 inputs:
 Here we will run HSS using the default scoring method: euclidean distance.Note that scoring metrics like silhouette or pixel class entropy (PCE) score will require additional package dependencies. 
 ```{r, echo=TRUE, results = 'hide'}
 channels = c('GLUT1', 'HK2', 'GAPDH', 'LDHA', 'MCT1', 'PFKFB4', 'IDH2', 'CyclinB1', 'GLUD12', 'CS', 'OGDH', 'CytC', 'ATP5A', 'S6_p', 'HIF1A')
-train.x = Tcell_intro[channels]
-train.y = Tcell_intro[['labels']]
+train.x = TcellHartmann2020_sampleData[channels]
+train.y = TcellHartmann2020_sampleData[['labels']]
 hss.result = runHSS(x = train.x, y = train.y, score.method = 'euclidean')
 
 ```
