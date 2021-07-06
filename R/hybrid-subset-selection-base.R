@@ -614,6 +614,7 @@ hybridSubsetSelection <- function(x, y, score.method , custom.score.method = NUL
 
     ## save lda.out results
     hss.results[["method"]] = score.method
+    hss.results[["finalMarkers"]] = markers
     hss.results[["HSSscores"]] = results
     hss.results[["ElbowPlot"]] = plotElbow(results = results, elbow = elbow)
     hss.results[["HSS-LDA-model"]] = lda.out
